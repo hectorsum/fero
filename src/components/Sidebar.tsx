@@ -1,6 +1,6 @@
-const ADDRESS = "Av. Reforma 128, Local 4 · CDMX";
-const SHOP_PHONE = "55 1234 5678";
-const BARBER_EMAIL = "fero@ferostudio.mx";
+const ADDRESS = "Av Republica de Panama 5920, Miraflores";
+const SHOP_PHONE = "999 333 222";
+const BARBER_EMAIL = "fero@gmail.com";
 
 const kicker: React.CSSProperties = {
   fontSize: 11,

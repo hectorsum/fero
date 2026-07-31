@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 
-const BARBER_EMAIL = "fero@ferostudio.mx";
 const BARBER_WHATSAPP = "5215512345678";
 
 type Mode = "corte" | "tatuaje" | null;
@@ -90,24 +89,6 @@ export default function BookingWizard() {
   };
   const valid = validStep();
 
-  const sendEmail = () => {
-    const sv = SERVICE_NAMES[s.service ?? 0];
-    const subject = `Cita FERO — ${s.name} — ${s.date ? fmtDate(s.date) : ""}, ${s.time}`;
-    const body = [
-      "Nueva cita en FERO Barbershop · Tattoo Studio",
-      "",
-      `Cliente: ${s.name}`,
-      `Teléfono: ${s.phone}`,
-      `Correo: ${s.email}`,
-      `Servicio: ${sv}`,
-      `Fecha: ${s.date ? fmtDate(s.date) : ""}`,
-      `Hora: ${s.time} (60 min)`,
-      ...(s.notes.trim() ? [`Notas: ${s.notes.trim()}`] : []),
-    ].join("\n");
-    window.location.href =
-      `mailto:${BARBER_EMAIL}?cc=${encodeURIComponent(s.email)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  };
-
   const sendWhatsApp = () => {
     const num = BARBER_WHATSAPP.replace(/\D/g, "");
     const text = [
@@ -132,7 +113,6 @@ export default function BookingWizard() {
     if (!validStep()) return;
     if (s.step === 3) {
       if (isTattoo) sendWhatsApp();
-      else sendEmail();
       patch({ done: true });
     } else {
       patch({ step: s.step + 1 });
@@ -259,12 +239,12 @@ export default function BookingWizard() {
           <div style={kickerStyle}>Tus datos *</div>
           <div className="field">
             <label htmlFor="f-nombre">Nombre completo</label>
-            <input className="input" id="f-nombre" type="text" placeholder="Ej. Andrés Cabrera" value={s.name} onChange={(e) => patch({ name: e.target.value })} />
+            <input className="input" id="f-nombre" type="text" placeholder="Ej. Hector Herrera" value={s.name} onChange={(e) => patch({ name: e.target.value })} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div className="field">
               <label htmlFor="f-tel">Teléfono</label>
-              <input className="input" id="f-tel" type="tel" placeholder="Ej. 55 1234 5678" value={s.phone} onChange={(e) => patch({ phone: e.target.value })} />
+              <input className="input" id="f-tel" type="tel" placeholder="Ej. 999 333 122" value={s.phone} onChange={(e) => patch({ phone: e.target.value })} />
             </div>
             <div className="field">
               <label htmlFor="f-mail">Correo electrónico</label>
@@ -277,7 +257,7 @@ export default function BookingWizard() {
               className="input"
               id="f-notas"
               rows={3}
-              placeholder="Algo que Fero deba saber…"
+              placeholder="Algo que Fernando deba saber…"
               value={s.notes}
               onChange={(e) => patch({ notes: e.target.value })}
               style={{ resize: "vertical", fontFamily: "var(--font-body)" }}
@@ -462,7 +442,7 @@ export default function BookingWizard() {
           <p style={{ margin: "22px 0 0", fontSize: 13.5, lineHeight: 1.6, color: "var(--color-neutral-600)" }}>
             {isTattoo
               ? "Al confirmar se abrirá WhatsApp con los datos de tu sesión, listos para enviarse a Fero. Solo tienes que enviar el mensaje."
-              : "Al confirmar se abrirá tu correo con los datos de la cita, dirigido a Fero y con copia para ti. Solo tienes que enviarlo."}
+              : "Al confirmar tu cita quedará agendada y verás la confirmación en pantalla."}
           </p>
         </div>
       )}
@@ -476,11 +456,10 @@ export default function BookingWizard() {
           <h2 style={{ margin: 0, fontFamily: "var(--font-heading)", fontWeight: 600, fontSize: 28, color: "var(--color-text)" }}>Cita registrada</h2>
           <p style={{ margin: 0, maxWidth: 420, fontSize: 15, lineHeight: 1.7, color: "var(--color-neutral-600)" }}>
             {s.date && s.time
-              ? `${isTattoo ? `Sesión de tatuaje (${s.tStyle}) — ` : `${SERVICE_NAMES[s.service ?? 0]} — `}${fmtDate(s.date)} a las ${s.time}${
-                  isTattoo
-                    ? ". Envía el mensaje de WhatsApp que se abrió para dejar todo confirmado."
-                    : ". Envía el correo que se abrió para dejar todo confirmado."
-                } Fero te espera.`
+              ? `${isTattoo ? `Sesión de tatuaje (${s.tStyle}) — ` : `${SERVICE_NAMES[s.service ?? 0]} — `}${fmtDate(s.date)} a las ${s.time}${isTattoo
+                ? ". Envía el mensaje de WhatsApp que se abrió para dejar todo confirmado."
+                : "."
+              } Fero te espera.`
               : ""}
           </p>
           <button className="btn btn-ghost" onClick={restart} style={{ marginTop: 8, cursor: "pointer" }}>

@@ -19,14 +19,10 @@ interface WizardState {
   viewY: number;
   viewM: number;
   done: boolean;
-  tStyle: string;
-  tSize: string;
-  tZone: string;
-  tIdea: string;
 }
 
 const SERVICE_NAMES = ["Servicio completo (Corte + Barba)", "Solo barba", "Solo corte"];
-const HOURS = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
+const HOURS = ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
 const DAY_NAMES = ["L", "M", "X", "J", "V", "S", "D"];
 const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const DAYS_LONG = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
@@ -57,10 +53,6 @@ function initialState(): WizardState {
     viewY: t.getFullYear(),
     viewM: t.getMonth(),
     done: false,
-    tStyle: "",
-    tSize: "",
-    tZone: "",
-    tIdea: "",
   };
 }
 
@@ -81,10 +73,7 @@ export default function BookingWizard() {
   const validStep = () => {
     if (s.step === 0) return s.mode !== null;
     if (s.step === 1) return s.name.trim() !== "" && s.phone.trim() !== "" && /.+@.+\..+/.test(s.email);
-    if (s.step === 2) {
-      if (isCorte) return s.service !== null && !!s.date && !!s.time;
-      return !!s.tStyle && !!s.tSize && !!s.date && !!s.time;
-    }
+    if (s.step === 2) return s.service !== null && !!s.date && !!s.time;
     return true;
   };
   const valid = validStep();
@@ -97,12 +86,6 @@ export default function BookingWizard() {
       `Nombre: ${s.name}`,
       `Teléfono: ${s.phone}`,
       `Correo: ${s.email}`,
-      `Estilo: ${s.tStyle}`,
-      `Tamaño: ${s.tSize}`,
-      ...(s.tZone.trim() ? [`Zona del cuerpo: ${s.tZone.trim()}`] : []),
-      `Fecha: ${s.date ? fmtDate(s.date) : ""}`,
-      `Hora: ${s.time}`,
-      ...(s.tIdea.trim() ? ["", `Idea: ${s.tIdea.trim()}`] : []),
       ...(s.notes.trim() ? [`Notas: ${s.notes.trim()}`] : []),
     ].join("\n");
     window.open(`https://wa.me/${num}?text=${encodeURIComponent(text)}`, "_blank");
@@ -111,8 +94,12 @@ export default function BookingWizard() {
   const goBack = () => patch({ step: Math.max(0, s.step - 1) });
   const goNext = () => {
     if (!validStep()) return;
+    if (s.step === 1 && isTattoo) {
+      sendWhatsApp();
+      patch({ done: true });
+      return;
+    }
     if (s.step === 3) {
-      if (isTattoo) sendWhatsApp();
       patch({ done: true });
     } else {
       patch({ step: s.step + 1 });
@@ -149,7 +136,7 @@ export default function BookingWizard() {
 
   const stepDefs = [
     { n: "1", label: "Tus datos" },
-    { n: "2", label: isTattoo ? "Tu tatuaje" : "Servicio y horario" },
+    { n: "2", label: "Servicio y horario" },
     { n: "3", label: "Confirmar" },
   ];
 
@@ -200,7 +187,7 @@ export default function BookingWizard() {
         </div>
       )}
 
-      {s.step > 0 && !s.done && (
+      {s.step > 0 && !s.done && isCorte && (
         <div className="flex flex-wrap items-center justify-center">
           {stepDefs.map((d, i) => {
             const num = i + 1;
@@ -252,12 +239,12 @@ export default function BookingWizard() {
             </div>
           </div>
           <div className="field">
-            <label htmlFor="f-notas">Notas (opcional)</label>
+            <label htmlFor="f-notas">{isCorte ? "Notas (opcional)" : "Descripción del tatuaje (opcional)"} </label>
             <textarea
               className="input"
               id="f-notas"
               rows={3}
-              placeholder="Algo que Fernando deba saber…"
+              placeholder={isCorte ? "Algo que Fernando deba saber…" : "Describe el estilo, tamaño, zona, referencias…"}
               value={s.notes}
               onChange={(e) => patch({ notes: e.target.value })}
               style={{ resize: "vertical", fontFamily: "var(--font-body)" }}
@@ -283,55 +270,15 @@ export default function BookingWizard() {
                     }}
                   >
                     <div style={{ fontFamily: "var(--font-heading)", fontWeight: 600, fontSize: 19, color: "var(--color-text)" }}>{title}</div>
-                    <div style={{ fontSize: 13, color: "var(--color-neutral-600)", fontFeatureSettings: "'tnum'" }}>60 min</div>
+                    <div style={{ fontSize: 13, color: "var(--color-neutral-600)", fontFeatureSettings: "'tnum'" }}>
+                      {(() => {
+                        if (i === 0) return "120 min";
+                        if (i === 1) return "60 min";
+                        return "60 min";
+                      })()}
+                    </div>
                   </button>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {isTattoo && (
-            <div className="card flex flex-col gap-5 p-6 sm:p-9">
-              <div style={kickerStyle}>Tu tatuaje</div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div className="field">
-                  <label htmlFor="t-estilo">Estilo *</label>
-                  <select className="input" id="t-estilo" value={s.tStyle} onChange={(e) => patch({ tStyle: e.target.value })}>
-                    <option value="">Selecciona…</option>
-                    <option>Tradicional</option>
-                    <option>Fine line</option>
-                    <option>Blackwork</option>
-                    <option>Realismo</option>
-                    <option>Lettering</option>
-                    <option>Otro</option>
-                  </select>
-                </div>
-                <div className="field">
-                  <label htmlFor="t-tam">Tamaño *</label>
-                  <select className="input" id="t-tam" value={s.tSize} onChange={(e) => patch({ tSize: e.target.value })}>
-                    <option value="">Selecciona…</option>
-                    <option>Pequeño (&lt;5cm)</option>
-                    <option>Mediano (5–10cm)</option>
-                    <option>Grande (10–20cm)</option>
-                    <option>Extra grande (&gt;20cm)</option>
-                  </select>
-                </div>
-              </div>
-              <div className="field">
-                <label htmlFor="t-zona">Zona del cuerpo</label>
-                <input className="input" id="t-zona" type="text" placeholder="Ej: antebrazo, cuello…" value={s.tZone} onChange={(e) => patch({ tZone: e.target.value })} />
-              </div>
-              <div className="field">
-                <label htmlFor="t-idea">Descripción de tu idea</label>
-                <textarea
-                  className="input"
-                  id="t-idea"
-                  rows={4}
-                  placeholder="Describe tu idea, referencias, colores, estilo…"
-                  value={s.tIdea}
-                  onChange={(e) => patch({ tIdea: e.target.value })}
-                  style={{ resize: "vertical", fontFamily: "var(--font-body)" }}
-                />
               </div>
             </div>
           )}
@@ -420,12 +367,7 @@ export default function BookingWizard() {
             { k: "Nombre", v: s.name },
             { k: "Teléfono", v: s.phone },
             { k: "Correo", v: s.email },
-            isCorte
-              ? { k: "Servicio", v: SERVICE_NAMES[s.service ?? 0] }
-              : { k: "Servicio", v: `Tatuaje — ${s.tStyle}` },
-            ...(isTattoo ? [{ k: "Tamaño", v: s.tSize }] : []),
-            ...(isTattoo && s.tZone.trim() ? [{ k: "Zona del cuerpo", v: s.tZone.trim() }] : []),
-            ...(isTattoo && s.tIdea.trim() ? [{ k: "Idea", v: s.tIdea.trim() }] : []),
+            { k: "Servicio", v: SERVICE_NAMES[s.service ?? 0] },
             { k: "Fecha", v: s.date ? fmtDate(s.date) : "" },
             { k: "Hora", v: `${s.time} — 60 min` },
             ...(s.notes.trim() ? [{ k: "Notas", v: s.notes.trim() }] : []),
@@ -440,9 +382,7 @@ export default function BookingWizard() {
             </div>
           ))}
           <p style={{ margin: "22px 0 0", fontSize: 13.5, lineHeight: 1.6, color: "var(--color-neutral-600)" }}>
-            {isTattoo
-              ? "Al confirmar se abrirá WhatsApp con los datos de tu sesión, listos para enviarse a Fero. Solo tienes que enviar el mensaje."
-              : "Al confirmar tu cita quedará agendada y verás la confirmación en pantalla."}
+            Al confirmar tu cita quedará agendada y verás la confirmación en pantalla.
           </p>
         </div>
       )}
@@ -453,14 +393,15 @@ export default function BookingWizard() {
             <circle cx={26} cy={26} r={24} fill="none" stroke="var(--color-accent)" strokeWidth={1.5} />
             <path d="M16 27 l7 7 l13 -15" fill="none" stroke="var(--color-accent-700)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <h2 style={{ margin: 0, fontFamily: "var(--font-heading)", fontWeight: 600, fontSize: 28, color: "var(--color-text)" }}>Cita registrada</h2>
+          <h2 style={{ margin: 0, fontFamily: "var(--font-heading)", fontWeight: 600, fontSize: 28, color: "var(--color-text)" }}>
+            {isTattoo ? "¡Ya casi!" : "Cita registrada"}
+          </h2>
           <p style={{ margin: 0, maxWidth: 420, fontSize: 15, lineHeight: 1.7, color: "var(--color-neutral-600)" }}>
-            {s.date && s.time
-              ? `${isTattoo ? `Sesión de tatuaje (${s.tStyle}) — ` : `${SERVICE_NAMES[s.service ?? 0]} — `}${fmtDate(s.date)} a las ${s.time}${isTattoo
-                ? ". Envía el mensaje de WhatsApp que se abrió para dejar todo confirmado."
-                : "."
-              } Fero te espera.`
-              : ""}
+            {isTattoo
+              ? "Te abrimos WhatsApp con tus datos listos para enviar. Solo envía el mensaje y Fero te contactará para coordinar tu sesión de tatuaje."
+              : s.date && s.time
+                ? `${SERVICE_NAMES[s.service ?? 0]} — ${fmtDate(s.date)} a las ${s.time}. Fero te espera.`
+                : ""}
           </p>
           <button className="btn btn-ghost" onClick={restart} style={{ marginTop: 8, cursor: "pointer" }}>
             Agendar otra cita
@@ -485,7 +426,7 @@ export default function BookingWizard() {
               opacity: valid ? 1 : 0.45,
             }}
           >
-            {s.step === 3 ? "Confirmar cita" : "Continuar"}
+            {s.step === 3 ? "Confirmar cita" : s.step === 1 && isTattoo ? "Enviar por WhatsApp" : "Continuar"}
           </button>
         </div>
       )}

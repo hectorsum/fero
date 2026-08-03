@@ -166,7 +166,7 @@ export default function Sidebar() {
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, color: "var(--color-neutral-700)" }}>
           <span></span>
-          <span style={{ fontFeatureSettings: "'tnum'" }}>13:00 – 21:00</span>
+          <span style={{ fontFeatureSettings: "'tnum'" }}>14:00 – 21:00</span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, color: "var(--color-neutral-500)" }}>
           <span>Domingo</span>

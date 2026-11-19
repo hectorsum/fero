@@ -1,6 +1,6 @@
-import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
-import BookingWizard from "@/components/BookingWizard";
+import Header from "@/presentation/layout/Header";
+import Sidebar from "@/presentation/layout/Sidebar";
+import BookingWizard from "@/presentation/booking/BookingWizard";
 
 export default function Home() {
   return (

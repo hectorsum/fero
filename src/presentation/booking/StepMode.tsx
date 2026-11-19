@@ -26,11 +26,18 @@ export default function StepMode({ patch }: { patch: Patch }) {
           onClick={() => patch({ mode: "tatuaje", step: 1 })}
           className="mode-card cursor-pointer flex flex-col items-center gap-3.5 p-7 sm:py-10 sm:px-6"
         >
-          <svg width={40} height={40} viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 19l7-7 3 3-7 7-3-3z" />
-            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
-            <path d="M2 2l7.586 7.586" />
-            <circle cx={11} cy={11} r={2} />
+          {/* Máquina de tatuar (export/icon-tatuaje.svg) */}
+          <svg width={40} height={40} viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth={1.3} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <g transform="translate(12 12) scale(1.22) rotate(45) translate(-12 -12)">
+              <path d="M10.6 19.2 L12 22.4 L13.4 19.2" />
+              <rect x={10} y={13.4} width={4} height={5.8} rx={1.6} />
+              <rect x={11.1} y={10.6} width={1.8} height={2.8} rx={0.6} />
+              <rect x={6.6} y={9} width={11.2} height={1.6} rx={0.8} />
+              <path d="M6.6 9.8 H5.2 M5.2 8.6 V11" />
+              <path d="M17.8 9 V4.2 a1.4 1.4 0 0 0 -1.4 -1.4 H10.8" />
+              <rect x={11} y={4.4} width={2.7} height={4.6} rx={1} />
+              <rect x={14.3} y={4.4} width={2.7} height={4.6} rx={1} />
+            </g>
           </svg>
           <div style={titleStyle}>Tatuaje</div>
           <div style={subStyle}>Consulta y sesión de tinta</div>

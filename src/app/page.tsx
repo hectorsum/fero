@@ -1,5 +1,6 @@
 import Header from "@/presentation/layout/Header";
 import Sidebar from "@/presentation/layout/Sidebar";
+import Footer from "@/presentation/layout/Footer";
 import BookingWizard from "@/presentation/booking/BookingWizard";
 
 export default function Home() {
@@ -12,6 +13,7 @@ export default function Home() {
           <Sidebar />
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

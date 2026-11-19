@@ -204,3 +204,46 @@ textarea.input {
 .next-btn:disabled {
   cursor: not-allowed;
 }
+
+/* — footer — */
+.footer-link {
+  font-family: var(--font-fero-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--color-neutral-600);
+}
+.footer-link:hover {
+  color: var(--color-accent);
+}
+
+/* — login (paleta «Acero» más cálida del diseño FERO Login) — */
+.login-page {
+  --color-bg: #0e0c09;
+  --color-text: #eeeae0;
+  --color-divider: rgba(238, 234, 224, 0.12);
+  --color-border: #3b3832;
+  --color-neutral-500: #8c887f;
+  --color-neutral-700: #c8c4ba;
+  --color-accent-700: #c4dd3a;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+.login-page .card {
+  background: #14120e;
+  border-color: rgba(238, 234, 224, 0.12);
+}
+.login-page .input::placeholder {
+  color: #6f6b63;
+}
+.back-link {
+  font-family: var(--font-fero-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  color: var(--color-neutral-500);
+}
+.back-link:hover {
+  color: var(--color-accent);
+}

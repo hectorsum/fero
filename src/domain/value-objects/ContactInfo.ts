@@ -13,3 +13,19 @@ export const isValidEmail = (email: string) => EMAIL_RE.test(email);
 export function isValidContactInfo(c: ContactInfo): boolean {
   return isValidName(c.name) && isValidPhone(c.phone) && isValidEmail(c.email);
 }
+
+export class InvalidContactInfoError extends Error {
+  constructor(readonly field: keyof ContactInfo) {
+    super(`Dato de contacto inválido: ${field}`);
+    this.name = "InvalidContactInfoError";
+  }
+}
+
+/** Normaliza (trim) y valida; lanza InvalidContactInfoError si algún campo no es válido. */
+export function createContactInfo(input: ContactInfo): ContactInfo {
+  const c = { name: input.name.trim(), phone: input.phone.trim(), email: input.email.trim() };
+  if (!isValidName(c.name)) throw new InvalidContactInfoError("name");
+  if (!isValidPhone(c.phone)) throw new InvalidContactInfoError("phone");
+  if (!isValidEmail(c.email)) throw new InvalidContactInfoError("email");
+  return c;
+}

@@ -1,4 +1,4 @@
-import { SERVICES } from "@/infrastructure/config/shop";
+import { serviceName } from "@/infrastructure/config/shop";
 import type { WizardState } from "@/presentation/hooks/useBookingWizard";
 import { fmtDate } from "./format";
 
@@ -16,7 +16,7 @@ export default function StepDone({ s, isTattoo, onRestart }: { s: WizardState; i
         {isTattoo
           ? "Te abrimos WhatsApp con tus datos listos para enviar. Solo envía el mensaje y Fero te contactará para coordinar tu sesión de tatuaje."
           : s.date && s.time
-            ? `${SERVICES[s.service ?? 0].name} — ${fmtDate(s.date)} a las ${s.time}. Fero te espera.`
+            ? `${serviceName(s.service ?? "completo")} — ${fmtDate(s.date)} a las ${s.time}. Fero te espera.`
             : ""}
       </p>
       <button className="btn btn-ghost" onClick={onRestart} style={{ marginTop: 8, cursor: "pointer" }}>

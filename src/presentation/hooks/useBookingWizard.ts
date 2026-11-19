@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { BookingMode } from "@/domain/entities/Booking";
+import type { BookingMode, ServiceType } from "@/domain/entities/Booking";
 import { isValidContactInfo } from "@/domain/value-objects/ContactInfo";
 import { buildWhatsAppLink } from "@/application/build-whatsapp-link";
 import { BARBER_WHATSAPP } from "@/infrastructure/config/shop";
@@ -13,7 +13,7 @@ export interface WizardState {
   phone: string;
   email: string;
   notes: string;
-  service: number | null;
+  service: ServiceType | null;
   date: Date | null;
   time: string | null;
   viewY: number;

@@ -17,14 +17,14 @@ export default function StepHorario({ s, patch, isCorte, shiftMonth }: Props) {
         <div className="flex flex-col gap-3.5">
           <div style={kickerStyle}>Elige un servicio *</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {SERVICES.map((svc, i) => (
+            {SERVICES.map((svc) => (
               <button
-                key={svc.name}
-                onClick={() => patch({ service: i })}
+                key={svc.id}
+                onClick={() => patch({ service: svc.id })}
                 className="svc-card cursor-pointer text-left flex flex-col gap-1.5 px-5 py-4"
                 style={{
-                  background: s.service === i ? "var(--color-accent-100)" : "transparent",
-                  border: `1px solid ${s.service === i ? "var(--color-accent)" : "var(--color-divider)"}`,
+                  background: s.service === svc.id ? "var(--color-accent-100)" : "transparent",
+                  border: `1px solid ${s.service === svc.id ? "var(--color-accent)" : "var(--color-divider)"}`,
                 }}
               >
                 <div style={{ fontFamily: "var(--font-heading)", fontWeight: 600, fontSize: 19, color: "var(--color-text)" }}>{svc.name}</div>

@@ -1,4 +1,4 @@
-import { SERVICES } from "@/infrastructure/config/shop";
+import { serviceName } from "@/infrastructure/config/shop";
 import type { WizardState } from "@/presentation/hooks/useBookingWizard";
 import { fmtDate, kickerStyle } from "./format";
 
@@ -7,7 +7,7 @@ export default function StepConfirmar({ s }: { s: WizardState }) {
     { k: "Nombre", v: s.name },
     { k: "Teléfono", v: s.phone },
     { k: "Correo", v: s.email },
-    { k: "Servicio", v: SERVICES[s.service ?? 0].name },
+    { k: "Servicio", v: serviceName(s.service ?? "completo") },
     { k: "Fecha", v: s.date ? fmtDate(s.date) : "" },
     { k: "Hora", v: `${s.time} — 60 min` },
     ...(s.notes.trim() ? [{ k: "Notas", v: s.notes.trim() }] : []),

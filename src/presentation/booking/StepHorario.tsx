@@ -1,4 +1,5 @@
-import { HOURS, SERVICES } from "@/infrastructure/config/shop";
+import type { ServiceType } from "@/domain/entities/Booking";
+import { SERVICES } from "@/infrastructure/config/shop";
 import type { Patch, WizardState } from "@/presentation/hooks/useBookingWizard";
 import Calendar from "./Calendar";
 import { fmtDate, kickerStyle } from "./format";
@@ -8,9 +9,14 @@ interface Props {
   patch: Patch;
   isCorte: boolean;
   shiftMonth: (dir: number) => void;
+  selectDate: (date: Date) => void;
+  selectService: (service: ServiceType) => void;
+  retrySlots: () => void;
 }
 
-export default function StepHorario({ s, patch, isCorte, shiftMonth }: Props) {
+const hintStyle = { fontSize: 14, color: "var(--color-neutral-600)" };
+
+export default function StepHorario({ s, patch, isCorte, shiftMonth, selectDate, selectService, retrySlots }: Props) {
   return (
     <div className="flex flex-col gap-8">
       {isCorte && (
@@ -20,7 +26,7 @@ export default function StepHorario({ s, patch, isCorte, shiftMonth }: Props) {
             {SERVICES.map((svc) => (
               <button
                 key={svc.id}
-                onClick={() => patch({ service: svc.id })}
+                onClick={() => selectService(svc.id)}
                 className="svc-card cursor-pointer text-left flex flex-col gap-1.5 px-5 py-4"
                 style={{
                   background: s.service === svc.id ? "var(--color-accent-100)" : "transparent",
@@ -42,16 +48,31 @@ export default function StepHorario({ s, patch, isCorte, shiftMonth }: Props) {
             viewY={s.viewY}
             viewM={s.viewM}
             selected={s.date}
-            onSelect={(date) => patch({ date, time: null })}
+            onSelect={selectDate}
             onShiftMonth={shiftMonth}
           />
           <div className="flex flex-col gap-3.5">
             <div style={{ fontSize: 14, color: "var(--color-neutral-700)" }}>
               {s.date ? `Horarios disponibles — ${fmtDate(s.date)}` : "Selecciona un día en el calendario para ver los horarios."}
             </div>
-            {s.date && (
+            {s.date && !s.service && <div style={hintStyle}>Elige un servicio para ver los horarios.</div>}
+            {s.date && s.slotsStatus === "loading" && (
+              <div style={hintStyle} aria-live="polite">
+                Cargando horarios…
+              </div>
+            )}
+            {s.date && s.slotsStatus === "error" && (
+              <div className="flex flex-wrap items-center gap-3" role="alert" style={hintStyle}>
+                No pudimos cargar los horarios.
+                <button className="btn btn-ghost" onClick={retrySlots} style={{ cursor: "pointer" }}>
+                  Reintentar
+                </button>
+              </div>
+            )}
+            {s.date && s.slots?.length === 0 && <div style={hintStyle}>No quedan horarios disponibles este día. Prueba con otra fecha.</div>}
+            {s.date && !!s.slots?.length && (
               <div className="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-3">
-                {HOURS.map((h) => (
+                {s.slots.map((h) => (
                   <button
                     key={h}
                     onClick={() => patch({ time: h })}

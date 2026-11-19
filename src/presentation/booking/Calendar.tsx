@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { isBookableDate, isPastDate, startOfDay } from "@/domain/services/scheduling";
+import { isBookableDate, isPastDate, parseISODate, shopNow } from "@/domain/services/scheduling";
+import { SHOP_TIMEZONE } from "@/infrastructure/config/shop";
 import { DAY_NAMES, MONTHS } from "./format";
 
 interface Props {
@@ -12,7 +13,8 @@ interface Props {
 
 export default function Calendar({ viewY, viewM, selected, onSelect, onShiftMonth }: Props) {
   const calendar = useMemo(() => {
-    const t = startOfDay(new Date());
+    // "Hoy" según la hora del local, no la del navegador.
+    const t = parseISODate(shopNow(new Date(), SHOP_TIMEZONE).date) ?? new Date();
     const first = new Date(viewY, viewM, 1);
     const lead = (first.getDay() + 6) % 7;
     const dim = new Date(viewY, viewM + 1, 0).getDate();

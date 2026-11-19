@@ -15,6 +15,8 @@ describe("ContactInfo", () => {
     expect(isValidContactInfo({ ...valid, name: "  " })).toBe(false);
     expect(isValidContactInfo({ ...valid, phone: "" })).toBe(false);
     expect(isValidContactInfo({ ...valid, email: "x" })).toBe(false);
+    expect(isValidContactInfo({ ...valid, name: "a".repeat(121) })).toBe(false);
+    expect(isValidContactInfo({ ...valid, phone: "1".repeat(41) })).toBe(false);
   });
 
   it("createContactInfo recorta espacios", () => {

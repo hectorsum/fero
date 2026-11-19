@@ -1,4 +1,4 @@
-import { BookingError, isServiceType, type Booking } from "@/domain/entities/Booking";
+import { BookingError, isServiceType, MAX_NOTES_LENGTH, type Booking } from "@/domain/entities/Booking";
 import { parseISODate } from "@/domain/services/scheduling";
 import { createContactInfo } from "@/domain/value-objects/ContactInfo";
 import { isTimeSlot } from "@/domain/value-objects/TimeSlot";
@@ -23,6 +23,8 @@ export function makeCreateBooking(deps: SchedulingDeps) {
     if (!parseISODate(input.date)) throw new BookingError("INVALID_DATE");
     if (!isTimeSlot(input.time)) throw new BookingError("INVALID_TIME");
     const contact = createContactInfo(input);
+    const notes = input.notes?.trim() ?? "";
+    if (notes.length > MAX_NOTES_LENGTH) throw new BookingError("INVALID_NOTES");
 
     const slots = await getAvailableSlots({ date: input.date, service: input.service });
     if (!slots.includes(input.time)) throw new BookingError("SLOT_UNAVAILABLE");
@@ -33,7 +35,7 @@ export function makeCreateBooking(deps: SchedulingDeps) {
       time: input.time,
       durationMin: deps.schedule.serviceDuration[input.service],
       contact,
-      notes: input.notes?.trim() ?? "",
+      notes,
     });
   };
 }

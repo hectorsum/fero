@@ -13,7 +13,10 @@ export const SERVICES: readonly { id: ServiceType; name: string; durationMin: nu
 
 export const serviceName = (id: ServiceType) => SERVICES.find((s) => s.id === id)?.name ?? "";
 
+export const SHOP_TIMEZONE = "America/Lima";
+
 export const SHOP_SCHEDULE: ShopSchedule = {
+  timeZone: SHOP_TIMEZONE,
   hours: HOURS,
   slotMinutes: 60,
   serviceDuration: Object.fromEntries(SERVICES.map((s) => [s.id, s.durationMin])) as Record<ServiceType, number>,

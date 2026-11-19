@@ -6,19 +6,23 @@ import {
   isPastDate,
   overlaps,
   parseISODate,
+  shopNow,
   startOfDay,
   toISODate,
   type ShopSchedule,
 } from "./scheduling";
 
 const schedule: ShopSchedule = {
+  timeZone: "America/Lima",
   hours: ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"],
   slotMinutes: 60,
   serviceDuration: { completo: 120, barba: 60, corte: 60 },
 };
 
-// Lunes 16 nov 2026, 08:00 hora local
+// Lunes 16 nov 2026, 08:00 hora local (para las reglas de calendario)
 const NOW = new Date(2026, 10, 16, 8, 0);
+// Mismo instante para el local en Lima
+const SHOP_NOW = { date: "2026-11-16", minutes: 8 * 60 };
 const TUESDAY = "2026-11-17";
 
 describe("reglas de calendario", () => {
@@ -53,6 +57,14 @@ describe("fechas ISO", () => {
   });
 });
 
+describe("shopNow", () => {
+  it("convierte un instante a la fecha y hora del local, sin depender de la zona del servidor", () => {
+    // 03:30 UTC del 17 = 22:30 del 16 en Lima (UTC-5)
+    expect(shopNow(new Date("2026-11-17T03:30:00Z"), "America/Lima")).toEqual({ date: "2026-11-16", minutes: 22 * 60 + 30 });
+    expect(shopNow(new Date("2026-11-17T00:00:00Z"), "America/Lima")).toEqual({ date: "2026-11-16", minutes: 19 * 60 });
+  });
+});
+
 describe("overlaps", () => {
   it("detecta solapamientos y respeta bordes", () => {
     expect(overlaps({ time: "09:00", durationMin: 120 }, { time: "10:00", durationMin: 60 })).toBe(true);
@@ -61,7 +73,7 @@ describe("overlaps", () => {
 });
 
 describe("availableSlots", () => {
-  const base = { schedule, date: TUESDAY, booked: [], now: NOW };
+  const base = { schedule, date: TUESDAY, booked: [], now: SHOP_NOW };
 
   it("servicio de 60 min: todos los horarios del local", () => {
     expect(availableSlots({ ...base, durationMin: 60 })).toEqual(schedule.hours);
@@ -82,7 +94,7 @@ describe("availableSlots", () => {
   });
 
   it("hoy: solo horarios posteriores a la hora actual", () => {
-    const now = new Date(2026, 10, 16, 14, 30);
+    const now = { date: "2026-11-16", minutes: 14 * 60 + 30 };
     expect(availableSlots({ ...base, date: "2026-11-16", now, durationMin: 60 })).toEqual([
       "15:00", "16:00", "17:00", "18:00", "19:00", "20:00",
     ]);

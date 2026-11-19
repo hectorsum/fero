@@ -6,9 +6,13 @@ export interface ContactInfo {
 
 const EMAIL_RE = /.+@.+\..+/;
 
-export const isValidName = (name: string) => name.trim() !== "";
-export const isValidPhone = (phone: string) => phone.trim() !== "";
-export const isValidEmail = (email: string) => EMAIL_RE.test(email);
+export const MAX_LENGTH = { name: 120, phone: 40, email: 254 } as const;
+
+const within = (v: string, max: number) => v.trim() !== "" && v.trim().length <= max;
+
+export const isValidName = (name: string) => within(name, MAX_LENGTH.name);
+export const isValidPhone = (phone: string) => within(phone, MAX_LENGTH.phone);
+export const isValidEmail = (email: string) => email.trim().length <= MAX_LENGTH.email && EMAIL_RE.test(email);
 
 export function isValidContactInfo(c: ContactInfo): boolean {
   return isValidName(c.name) && isValidPhone(c.phone) && isValidEmail(c.email);

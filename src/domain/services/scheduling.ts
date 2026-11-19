@@ -2,6 +2,8 @@ import type { ServiceType } from "../entities/Booking";
 import { toMinutes, type TimeSlot } from "../value-objects/TimeSlot";
 
 export interface ShopSchedule {
+  /** Zona horaria IANA del local, p. ej. "America/Lima". */
+  timeZone: string;
   /** Inicios de bloque en los que el local atiende. */
   hours: readonly TimeSlot[];
   /** Duración de cada bloque de `hours`. */
@@ -36,6 +38,28 @@ export function parseISODate(s: string): Date | null {
   return toISODate(d) === s ? d : null;
 }
 
+/** "Ahora" expresado en la hora local del local (independiente de la zona del servidor). */
+export interface ShopNow {
+  /** "YYYY-MM-DD" */
+  date: string;
+  /** Minutos desde medianoche. */
+  minutes: number;
+}
+
+export function shopNow(instant: Date, timeZone: string): ShopNow {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(instant);
+  const get = (t: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === t)?.value ?? "";
+  return { date: `${get("year")}-${get("month")}-${get("day")}`, minutes: Number(get("hour")) * 60 + Number(get("minute")) };
+}
+
 interface Interval {
   time: TimeSlot;
   durationMin: number;
@@ -57,20 +81,19 @@ export function availableSlots(params: {
   date: string;
   durationMin: number;
   booked: readonly Interval[];
-  now?: Date;
+  now: ShopNow;
 }): TimeSlot[] {
-  const { schedule, date, durationMin, booked, now = new Date() } = params;
+  const { schedule, date, durationMin, booked, now } = params;
   const day = parseISODate(date);
-  if (!day || !isBookableDate(day, startOfDay(now))) return [];
+  if (!day || isClosedDay(day) || date < now.date) return [];
 
   const open = new Set(schedule.hours.map(toMinutes));
   const blocks = Math.ceil(durationMin / schedule.slotMinutes);
-  const isToday = toISODate(now) === date;
-  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const isToday = date === now.date;
 
   return schedule.hours.filter((time) => {
     const start = toMinutes(time);
-    if (isToday && start <= nowMin) return false;
+    if (isToday && start <= now.minutes) return false;
     for (let k = 0; k < blocks; k++) {
       if (!open.has(start + k * schedule.slotMinutes)) return false;
     }

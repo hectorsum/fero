@@ -1,4 +1,4 @@
-import type { Booking, NewBooking } from "@/domain/entities/Booking";
+import type { BookedSlot, Booking, NewBooking } from "@/domain/entities/Booking";
 import type { BookingRepository } from "@/domain/repositories/BookingRepository";
 
 export class InMemoryBookingRepository implements BookingRepository {
@@ -11,7 +11,7 @@ export class InMemoryBookingRepository implements BookingRepository {
     return booking;
   }
 
-  async findByDate(date: string): Promise<Booking[]> {
-    return this.items.filter((b) => b.date === date);
+  async findByDate(date: string): Promise<BookedSlot[]> {
+    return this.items.filter((b) => b.date === date).map(({ date, time, durationMin }) => ({ date, time, durationMin }));
   }
 }

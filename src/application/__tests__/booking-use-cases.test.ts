@@ -7,11 +7,12 @@ import { makeGetAvailableSlots } from "../get-available-slots";
 import { InMemoryBookingRepository } from "./InMemoryBookingRepository";
 
 const schedule: ShopSchedule = {
+  timeZone: "America/Lima",
   hours: ["09:00", "10:00", "11:00", "14:00", "15:00"],
   slotMinutes: 60,
   serviceDuration: { completo: 120, barba: 60, corte: 60 },
 };
-const now = () => new Date(2026, 10, 16, 8, 0); // lunes
+const now = () => new Date("2026-11-16T13:00:00Z"); // lunes 08:00 en Lima
 const DATE = "2026-11-17";
 
 const input = (over: Partial<CreateBookingInput> = {}): CreateBookingInput => ({
@@ -71,6 +72,7 @@ describe("CreateBooking", () => {
     await rejectsWith(createBooking(input({ service: "tinte" })), "INVALID_SERVICE");
     await rejectsWith(createBooking(input({ date: "17/11/2026" })), "INVALID_DATE");
     await rejectsWith(createBooking(input({ time: "9am" })), "INVALID_TIME");
+    await rejectsWith(createBooking(input({ notes: "x".repeat(1001) })), "INVALID_NOTES");
     await expect(createBooking(input({ email: "x" }))).rejects.toBeInstanceOf(InvalidContactInfoError);
     expect(repo.items).toHaveLength(0);
   });
@@ -88,7 +90,17 @@ describe("GetAvailableSlots", () => {
     expect(await getAvailableSlots({ date: DATE, service: "corte" })).toContain("09:00");
   });
 
-  it("servicio desconocido", async () => {
+  it("servicio o fecha inválidos", async () => {
     await expect(getAvailableSlots({ date: DATE, service: "x" as never })).rejects.toBeInstanceOf(BookingError);
+    await rejectsWith(getAvailableSlots({ date: "2026-13-01", service: "corte" }), "INVALID_DATE");
+  });
+
+  it("usa la hora del local (Lima, UTC-5), no la del servidor", async () => {
+    // 19:30 UTC = 14:30 en Lima: queda 15:00 hoy (en UTC no quedaría nada)
+    const afternoon = makeGetAvailableSlots({ repo, schedule, now: () => new Date("2026-11-16T19:30:00Z") });
+    expect(await afternoon({ date: "2026-11-16", service: "corte" })).toEqual(["15:00"]);
+    // 02:00 UTC del 17 = 21:00 del 16 en Lima: el 17 todavía es mañana y está completo
+    const night = makeGetAvailableSlots({ repo, schedule, now: () => new Date("2026-11-17T02:00:00Z") });
+    expect(await night({ date: "2026-11-17", service: "corte" })).toEqual(schedule.hours);
   });
 });

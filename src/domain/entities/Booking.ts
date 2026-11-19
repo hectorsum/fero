@@ -22,7 +22,12 @@ export interface Booking {
 
 export type NewBooking = Omit<Booking, "id" | "createdAt">;
 
-export type BookingErrorCode = "INVALID_SERVICE" | "INVALID_DATE" | "INVALID_TIME" | "SLOT_UNAVAILABLE";
+/** Ocupación de un horario, sin datos personales. */
+export type BookedSlot = Pick<Booking, "date" | "time" | "durationMin">;
+
+export const MAX_NOTES_LENGTH = 1000;
+
+export type BookingErrorCode = "INVALID_SERVICE" | "INVALID_DATE" | "INVALID_TIME" | "INVALID_NOTES" | "SLOT_UNAVAILABLE";
 
 export class BookingError extends Error {
   constructor(readonly code: BookingErrorCode, message: string = code) {

@@ -4,10 +4,11 @@ import { useRef, useState } from "react";
 import { buildWhatsAppLink } from "@/application/build-whatsapp-link";
 import { createBookingAction, getAvailableSlotsAction } from "@/app/actions";
 import type { BookingMode, ServiceType } from "@/domain/entities/Booking";
-import { toISODate } from "@/domain/services/scheduling";
+import { availableSlots, shopNow, toISODate } from "@/domain/services/scheduling";
 import { isValidContactInfo } from "@/domain/value-objects/ContactInfo";
 import type { TimeSlot } from "@/domain/value-objects/TimeSlot";
-import { BARBER_WHATSAPP } from "@/infrastructure/config/shop";
+import { BARBER_WHATSAPP, SHOP_SCHEDULE } from "@/infrastructure/config/shop";
+import { fmtDate } from "@/presentation/booking/format";
 
 export type SlotsStatus = "idle" | "loading" | "error";
 
@@ -21,6 +22,11 @@ export interface WizardState {
   service: ServiceType | null;
   date: Date | null;
   time: string | null;
+  /** Solo flujo tatuaje: se envían por WhatsApp, no se guardan. */
+  tStyle: string;
+  tSize: string;
+  tZone: string;
+  tIdea: string;
   viewY: number;
   viewM: number;
   done: boolean;
@@ -47,6 +53,10 @@ function initialState(): WizardState {
     service: null,
     date: null,
     time: null,
+    tStyle: "",
+    tSize: "",
+    tZone: "",
+    tIdea: "",
     viewY: t.getFullYear(),
     viewM: t.getMonth(),
     done: false,
@@ -60,7 +70,10 @@ function initialState(): WizardState {
 export function validStep(s: WizardState): boolean {
   if (s.step === 0) return s.mode !== null;
   if (s.step === 1) return isValidContactInfo(s);
-  if (s.step === 2) return s.service !== null && !!s.date && !!s.time;
+  if (s.step === 2) {
+    const details = s.mode === "tatuaje" ? s.tStyle !== "" && s.tSize !== "" : s.service !== null;
+    return details && !!s.date && !!s.time;
+  }
   return true;
 }
 
@@ -76,6 +89,18 @@ export function useBookingWizard() {
 
   async function loadSlots(date: Date | null, service: ServiceType | null) {
     const id = ++slotsRequest.current;
+    if (date && isTattoo) {
+      // Tatuaje: la fecha es una preferencia que se coordina por WhatsApp; no se cruzan citas.
+      const slots = availableSlots({
+        schedule: SHOP_SCHEDULE,
+        date: toISODate(date),
+        durationMin: SHOP_SCHEDULE.slotMinutes,
+        booked: [],
+        now: shopNow(new Date(), SHOP_SCHEDULE.timeZone),
+      });
+      patch({ slots, slotsStatus: "idle" });
+      return;
+    }
     if (!date || !service) {
       patch({ slots: null, slotsStatus: "idle" });
       return;
@@ -140,15 +165,29 @@ export function useBookingWizard() {
     if (s.submitting) return;
     patch({ step: Math.max(0, s.step - 1), error: null });
   };
+  const sendTattooRequest = () => {
+    const link = buildWhatsAppLink({
+      barberPhone: BARBER_WHATSAPP,
+      contact: s,
+      notes: s.notes,
+      tattoo: {
+        style: s.tStyle,
+        size: s.tSize,
+        zone: s.tZone,
+        idea: s.tIdea,
+        date: s.date ? fmtDate(s.date) : undefined,
+        time: s.time ?? undefined,
+      },
+    });
+    window.open(link, "_blank");
+    patch({ done: true });
+  };
+
   const goNext = () => {
     if (!valid) return;
-    if (s.step === 1 && isTattoo) {
-      window.open(buildWhatsAppLink({ barberPhone: BARBER_WHATSAPP, contact: s, notes: s.notes }), "_blank");
-      patch({ done: true });
-      return;
-    }
     if (s.step === 3) {
-      void confirmBooking();
+      if (isTattoo) sendTattooRequest();
+      else void confirmBooking();
     } else {
       patch({ step: s.step + 1, error: null });
     }

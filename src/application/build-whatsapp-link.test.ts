@@ -28,4 +28,31 @@ describe("buildWhatsAppLink", () => {
     expect(url).not.toContain("&B");
     expect(decode(url).text).toContain("Nombre: A&B #1");
   });
+
+  it("incluye los datos del tatuaje y omite los opcionales vacíos", () => {
+    const { text } = decode(
+      buildWhatsAppLink({
+        barberPhone: "1",
+        contact,
+        notes: "zurda",
+        tattoo: { style: "Fine line", size: "Pequeño (<5cm)", zone: " ", idea: " rosa ", date: "martes 17 de noviembre de 2026", time: "10:00" },
+      }),
+    );
+    expect(text).toBe(
+      [
+        "Hola Fero, quiero agendar una sesión de tatuaje 🖋",
+        "",
+        "Nombre: Ana López",
+        "Teléfono: 999 333 122",
+        "Correo: ana@correo.com",
+        "Estilo: Fine line",
+        "Tamaño: Pequeño (<5cm)",
+        "Fecha: martes 17 de noviembre de 2026",
+        "Hora: 10:00",
+        "",
+        "Idea: rosa",
+        "Notas: zurda",
+      ].join("\n"),
+    );
+  });
 });

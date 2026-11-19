@@ -18,15 +18,16 @@ export default function Calendar({ viewY, viewM, selected, onSelect, onShiftMont
     const first = new Date(viewY, viewM, 1);
     const lead = (first.getDay() + 6) % 7;
     const dim = new Date(viewY, viewM + 1, 0).getDate();
-    const cells: { day: number; date: Date | null; disabled: boolean; past: boolean; selected: boolean }[] = [];
-    for (let i = 0; i < lead; i++) cells.push({ day: 0, date: null, disabled: true, past: false, selected: false });
+    const cells: { day: number; date: Date | null; disabled: boolean; closed: boolean; selected: boolean }[] = [];
+    for (let i = 0; i < lead; i++) cells.push({ day: 0, date: null, disabled: true, closed: false, selected: false });
     for (let d = 1; d <= dim; d++) {
       const date = new Date(viewY, viewM, d);
       cells.push({
         day: d,
         date,
         disabled: !isBookableDate(date, t),
-        past: isPastDate(date, t),
+        // Tachamos solo los días cerrados (domingos); los pasados solo se atenúan.
+        closed: !isBookableDate(date, t) && !isPastDate(date, t),
         selected: !!selected && date.getTime() === selected.getTime(),
       });
     }
@@ -67,12 +68,13 @@ export default function Calendar({ viewY, viewM, selected, onSelect, onShiftMont
             disabled={c.disabled}
             onClick={() => c.date && onSelect(c.date)}
             className="cal-day border-none h-[38px] rounded-full text-sm"
+            aria-pressed={c.selected}
             style={{
               cursor: c.disabled ? "default" : "pointer",
               fontFeatureSettings: "'tnum'",
               background: c.selected ? "var(--color-accent)" : "transparent",
-              color: c.selected ? "#fff" : c.disabled ? "var(--color-neutral-400)" : "var(--color-text)",
-              textDecoration: c.past ? "line-through" : "none",
+              color: c.selected ? "var(--color-on-accent)" : c.disabled ? "var(--color-neutral-400)" : "var(--color-text)",
+              textDecoration: c.closed ? "line-through" : "none",
             }}
           >
             {c.day || ""}

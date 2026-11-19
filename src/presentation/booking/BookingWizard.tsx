@@ -25,20 +25,21 @@ export default function BookingWizard() {
       </div>
 
       {s.step === 0 && !s.done && <StepMode patch={patch} />}
-      {s.step > 0 && !s.done && isCorte && <StepIndicator step={s.step} />}
-      {s.step === 1 && !s.done && <StepDatos s={s} patch={patch} isCorte={isCorte} />}
+      {s.step > 0 && !s.done && <StepIndicator step={s.step} isTattoo={isTattoo} />}
+      {s.step === 1 && !s.done && <StepDatos s={s} patch={patch} />}
       {s.step === 2 && !s.done && (
         <StepHorario
           s={s}
           patch={patch}
           isCorte={isCorte}
+          isTattoo={isTattoo}
           shiftMonth={shiftMonth}
           selectDate={selectDate}
           selectService={selectService}
           retrySlots={retrySlots}
         />
       )}
-      {s.step === 3 && !s.done && <StepConfirmar s={s} />}
+      {s.step === 3 && !s.done && <StepConfirmar s={s} isTattoo={isTattoo} />}
       {s.done && <StepDone s={s} isTattoo={isTattoo} onRestart={restart} />}
 
       {s.error && !s.done && (
@@ -60,7 +61,7 @@ export default function BookingWizard() {
       {s.step > 0 && !s.done && (
         <div className="grid grid-cols-2 gap-3 sm:gap-5">
           <button
-            className="btn btn-secondary cursor-pointer py-3.5 text-sm tracking-[.06em]"
+            className="btn btn-secondary py-3.5 text-sm tracking-[.06em]"
             onClick={goBack}
             disabled={s.submitting}
           >
@@ -71,15 +72,9 @@ export default function BookingWizard() {
             disabled={!valid}
             aria-busy={s.submitting}
             className="next-btn cursor-pointer py-3.5 text-sm uppercase tracking-[.14em]"
-            style={{
-              borderRadius: "var(--radius-md)",
-              border: "1px solid var(--color-accent)",
-              background: "transparent",
-              color: "var(--color-accent-700)",
-              opacity: valid ? 1 : 0.45,
-            }}
+            style={{ opacity: valid ? 1 : 0.45 }}
           >
-            {s.step === 3 ? (s.submitting ? "Confirmando…" : "Confirmar cita") : s.step === 1 && isTattoo ? "Enviar por WhatsApp" : "Continuar"}
+            {s.step === 3 ? (s.submitting ? "Confirmando…" : "Confirmar cita") : "Continuar"}
           </button>
         </div>
       )}

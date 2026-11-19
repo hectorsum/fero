@@ -3,6 +3,7 @@ const SHOP_PHONE = "999 333 222";
 const BARBER_EMAIL = "fero@gmail.com";
 
 const kicker: React.CSSProperties = {
+  fontFamily: "var(--font-fero-mono), monospace",
   fontSize: 11,
   letterSpacing: ".16em",
   textTransform: "uppercase",
@@ -93,7 +94,7 @@ function SocialLink({
 export default function Sidebar() {
   return (
     <aside
-      className="card flex flex-col gap-6 p-6 sm:p-7 lg:sticky lg:top-6"
+      className="card flex flex-col gap-[26px] p-6 sm:py-8 sm:px-[30px] lg:sticky lg:top-6"
     >
       <h2
         style={{

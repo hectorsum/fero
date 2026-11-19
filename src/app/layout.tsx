@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Lora, Playfair_Display, DM_Mono } from "next/font/google";
+import { Lora, Playfair_Display, DM_Mono } from "next/font/google";
 import "./globals.css";
-
-const cormorant = Cormorant_Garamond({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["400", "600"],
-});
 
 const lora = Lora({
   variable: "--font-body",
@@ -15,9 +9,9 @@ const lora = Lora({
 });
 
 const playfair = Playfair_Display({
-  variable: "--font-fero-display",
+  variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["800"],
+  weight: ["600", "700", "800"],
 });
 
 const dmMono = DM_Mono({
@@ -37,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${cormorant.variable} ${lora.variable} ${playfair.variable} ${dmMono.variable}`}>
+    <html lang="es" className={`${lora.variable} ${playfair.variable} ${dmMono.variable}`}>
       <body>{children}</body>
     </html>
   );

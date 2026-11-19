@@ -21,3 +21,6 @@ export const SHOP_SCHEDULE: ShopSchedule = {
   slotMinutes: 60,
   serviceDuration: Object.fromEntries(SERVICES.map((s) => [s.id, s.durationMin])) as Record<ServiceType, number>,
 };
+
+export const TATTOO_STYLES = ["Tradicional", "Fine line", "Blackwork", "Realismo", "Lettering", "Otro"] as const;
+export const TATTOO_SIZES = ["Pequeño (<5cm)", "Mediano (5–10cm)", "Grande (10–20cm)", "Extra grande (>20cm)"] as const;

@@ -1,23 +1,31 @@
 import type { Metadata } from "next";
-import { Lora, Playfair_Display, DM_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const lora = Lora({
+// Fuentes servidas desde el repo (subset latín, licencia OFL; origen: Fontsource).
+// next/font/google las descarga durante el build y en Vercel esa descarga puede fallar
+// ("Can't resolve '@vercel/turbopack-next/internal/font/google/font'").
+const lora = localFont({
   variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["400", "600"],
+  src: "./fonts/lora-latin-wght-normal.woff2",
+  weight: "400 700",
+  display: "swap",
 });
 
-const playfair = Playfair_Display({
+const playfair = localFont({
   variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  src: "./fonts/playfair-display-latin-wght-normal.woff2",
+  weight: "400 900",
+  display: "swap",
 });
 
-const dmMono = DM_Mono({
+const dmMono = localFont({
   variable: "--font-fero-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  src: [
+    { path: "./fonts/dm-mono-latin-400-normal.woff2", weight: "400" },
+    { path: "./fonts/dm-mono-latin-500-normal.woff2", weight: "500" },
+  ],
+  display: "swap",
 });
 
 export const metadata: Metadata = {

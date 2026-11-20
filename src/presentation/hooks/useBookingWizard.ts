@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { buildWhatsAppLink } from "@/application/build-whatsapp-link";
 import { createBookingAction, getAvailableSlotsAction } from "@/app/actions";
+import type { Availability } from "@/domain/entities/Availability";
 import type { BookingMode, ServiceType } from "@/domain/entities/Booking";
-import { availableSlots, shopNow, toISODate } from "@/domain/services/scheduling";
+import { availableSlots, openHoursForDate, shopNow, toISODate } from "@/domain/services/scheduling";
 import { isValidContactInfo } from "@/domain/value-objects/ContactInfo";
 import type { TimeSlot } from "@/domain/value-objects/TimeSlot";
 import { BARBER_WHATSAPP, SHOP_SCHEDULE } from "@/infrastructure/config/shop";
@@ -77,7 +78,7 @@ export function validStep(s: WizardState): boolean {
   return true;
 }
 
-export function useBookingWizard() {
+export function useBookingWizard(availability: Availability) {
   const [s, setS] = useState<WizardState>(initialState);
   const patch: Patch = (p) => setS((prev) => ({ ...prev, ...p }));
   // Descarta respuestas de peticiones de horarios que ya no corresponden a la selección actual.
@@ -91,9 +92,11 @@ export function useBookingWizard() {
     const id = ++slotsRequest.current;
     if (date && isTattoo) {
       // Tatuaje: la fecha es una preferencia que se coordina por WhatsApp; no se cruzan citas.
+      const iso = toISODate(date);
       const slots = availableSlots({
-        schedule: SHOP_SCHEDULE,
-        date: toISODate(date),
+        hours: openHoursForDate(availability, iso, SHOP_SCHEDULE.slotMinutes),
+        slotMinutes: SHOP_SCHEDULE.slotMinutes,
+        date: iso,
         durationMin: SHOP_SCHEDULE.slotMinutes,
         booked: [],
         now: shopNow(new Date(), SHOP_SCHEDULE.timeZone),
@@ -123,6 +126,11 @@ export function useBookingWizard() {
       if (id === slotsRequest.current) patch({ slotsStatus: "error" });
     }
   }
+
+  const isOpenDate = useCallback(
+    (date: Date) => openHoursForDate(availability, toISODate(date), SHOP_SCHEDULE.slotMinutes).length > 0,
+    [availability],
+  );
 
   const selectDate = (date: Date) => {
     patch({ date, time: null, error: null });
@@ -215,5 +223,6 @@ export function useBookingWizard() {
     selectDate,
     selectService,
     retrySlots,
+    isOpenDate,
   };
 }

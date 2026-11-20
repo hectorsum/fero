@@ -1,5 +1,6 @@
 "use client";
 
+import type { Availability } from "@/domain/entities/Availability";
 import { useBookingWizard } from "@/presentation/hooks/useBookingWizard";
 import StepConfirmar from "./StepConfirmar";
 import StepDatos from "./StepDatos";
@@ -8,9 +9,9 @@ import StepHorario from "./StepHorario";
 import StepIndicator from "./StepIndicator";
 import StepMode from "./StepMode";
 
-export default function BookingWizard() {
-  const { s, patch, valid, isCorte, isTattoo, goNext, goBack, restart, shiftMonth, selectDate, selectService, retrySlots } =
-    useBookingWizard();
+export default function BookingWizard({ availability }: { availability: Availability }) {
+  const { s, patch, valid, isCorte, isTattoo, goNext, goBack, restart, shiftMonth, selectDate, selectService, retrySlots, isOpenDate } =
+    useBookingWizard(availability);
 
   return (
     <div className="flex min-w-0 flex-col gap-8 sm:gap-9">
@@ -37,6 +38,7 @@ export default function BookingWizard() {
           selectDate={selectDate}
           selectService={selectService}
           retrySlots={retrySlots}
+          isOpenDate={isOpenDate}
         />
       )}
       {s.step === 3 && !s.done && <StepConfirmar s={s} isTattoo={isTattoo} />}

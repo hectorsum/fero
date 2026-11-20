@@ -1,12 +1,11 @@
+import { openSlotsForDate, type Availability, type Weekday } from "../entities/Availability";
 import type { ServiceType } from "../entities/Booking";
 import { toMinutes, type TimeSlot } from "../value-objects/TimeSlot";
 
 export interface ShopSchedule {
   /** Zona horaria IANA del local, p. ej. "America/Lima". */
   timeZone: string;
-  /** Inicios de bloque en los que el local atiende. */
-  hours: readonly TimeSlot[];
-  /** Duración de cada bloque de `hours`. */
+  /** Duración de cada slot de la agenda (los horarios salen de la disponibilidad del admin). */
   slotMinutes: number;
   serviceDuration: Readonly<Record<ServiceType, number>>;
 }
@@ -18,13 +17,7 @@ export function startOfDay(d: Date): Date {
   return t;
 }
 
-/** El local cierra los domingos. */
-export const isClosedDay = (date: Date) => date.getDay() === 0;
-
 export const isPastDate = (date: Date, today: Date = startOfDay(new Date())) => date < today;
-
-export const isBookableDate = (date: Date, today: Date = startOfDay(new Date())) =>
-  !isClosedDay(date) && !isPastDate(date, today);
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -73,30 +66,88 @@ export function overlaps(a: Interval, b: Interval): boolean {
 
 /**
  * Horarios de inicio disponibles para un servicio de `durationMin` en `date`:
- * el servicio debe caber en bloques consecutivos del horario del local, no solaparse
+ * el servicio debe caber en slots consecutivos abiertos ese día (`hours`), no solaparse
  * con citas existentes y, si la fecha es hoy, empezar después de `now`.
  */
 export function availableSlots(params: {
-  schedule: ShopSchedule;
+  /** Slots abiertos de ese día (ver openSlotsForDate). */
+  hours: readonly TimeSlot[];
+  slotMinutes: number;
   date: string;
   durationMin: number;
   booked: readonly Interval[];
   now: ShopNow;
 }): TimeSlot[] {
-  const { schedule, date, durationMin, booked, now } = params;
+  const { hours, slotMinutes, date, durationMin, booked, now } = params;
   const day = parseISODate(date);
-  if (!day || isClosedDay(day) || date < now.date) return [];
+  if (!day || date < now.date) return [];
 
-  const open = new Set(schedule.hours.map(toMinutes));
-  const blocks = Math.ceil(durationMin / schedule.slotMinutes);
+  const open = new Set(hours.map(toMinutes));
+  const blocks = Math.ceil(durationMin / slotMinutes);
   const isToday = date === now.date;
 
-  return schedule.hours.filter((time) => {
+  return hours.filter((time) => {
     const start = toMinutes(time);
     if (isToday && start <= now.minutes) return false;
     for (let k = 0; k < blocks; k++) {
-      if (!open.has(start + k * schedule.slotMinutes)) return false;
+      if (!open.has(start + k * slotMinutes)) return false;
     }
     return !booked.some((b) => overlaps({ time, durationMin }, b));
   });
+}
+
+/** Slots abiertos de una fecha "YYYY-MM-DD" según la disponibilidad configurada. */
+export function openHoursForDate(av: Availability, date: string, slotMinutes: number): TimeSlot[] {
+  const day = parseISODate(date);
+  if (!day) return [];
+  return openSlotsForDate(av, date, day.getDay() as Weekday, slotMinutes);
+}
+
+/** Desfase (ms) de `timeZone` respecto a UTC en el instante dado. */
+function tzOffsetMs(instant: Date, timeZone: string): number {
+  const p = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(instant);
+  const g = (t: Intl.DateTimeFormatPartTypes) => Number(p.find((x) => x.type === t)?.value);
+  const asUtc = Date.UTC(g("year"), g("month") - 1, g("day"), g("hour"), g("minute"), g("second"));
+  return asUtc - Math.floor(instant.getTime() / 1000) * 1000;
+}
+
+/** Instante UTC de una fecha "YYYY-MM-DD" + minutos desde medianoche, en la hora local de `timeZone`. */
+export function zonedToUtc(date: string, minutes: number, timeZone: string): Date {
+  const [y, m, d] = date.split("-").map(Number);
+  const guess = Date.UTC(y, m - 1, d, 0, minutes);
+  const first = guess - tzOffsetMs(new Date(guess), timeZone);
+  // Segunda pasada por si el desfase cambia (horario de verano) entre la suposición y el resultado.
+  return new Date(guess - tzOffsetMs(new Date(first), timeZone));
+}
+
+/**
+ * Convierte intervalos ocupados (instantes UTC) a ocupación local de `date`, recortados al día.
+ * Sirve para cruzar eventos de un calendario externo con la agenda.
+ */
+export function busyToDayIntervals(
+  busy: readonly { start: Date; end: Date }[],
+  date: string,
+  timeZone: string,
+): { date: string; time: TimeSlot; durationMin: number }[] {
+  const dayStart = zonedToUtc(date, 0, timeZone).getTime();
+  const dayEnd = zonedToUtc(date, 24 * 60, timeZone).getTime();
+  const out: { date: string; time: TimeSlot; durationMin: number }[] = [];
+  for (const b of busy) {
+    const s = Math.max(b.start.getTime(), dayStart);
+    const e = Math.min(b.end.getTime(), dayEnd);
+    if (!(e > s)) continue;
+    const startMin = Math.floor((s - dayStart) / 60000);
+    const endMin = Math.ceil((e - dayStart) / 60000);
+    out.push({ date, time: `${pad(Math.floor(startMin / 60))}:${pad(startMin % 60)}`, durationMin: endMin - startMin });
+  }
+  return out;
 }

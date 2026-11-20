@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { isBookableDate, isPastDate, parseISODate, shopNow } from "@/domain/services/scheduling";
+import { isPastDate, parseISODate, shopNow } from "@/domain/services/scheduling";
 import { SHOP_TIMEZONE } from "@/infrastructure/config/shop";
 import { DAY_NAMES, MONTHS } from "./format";
 
@@ -9,9 +9,11 @@ interface Props {
   selected: Date | null;
   onSelect: (date: Date) => void;
   onShiftMonth: (dir: number) => void;
+  /** El día tiene horario de atención (según la disponibilidad del admin). */
+  isOpenDate: (date: Date) => boolean;
 }
 
-export default function Calendar({ viewY, viewM, selected, onSelect, onShiftMonth }: Props) {
+export default function Calendar({ viewY, viewM, selected, onSelect, onShiftMonth, isOpenDate }: Props) {
   const calendar = useMemo(() => {
     // "Hoy" según la hora del local, no la del navegador.
     const t = parseISODate(shopNow(new Date(), SHOP_TIMEZONE).date) ?? new Date();
@@ -22,18 +24,20 @@ export default function Calendar({ viewY, viewM, selected, onSelect, onShiftMont
     for (let i = 0; i < lead; i++) cells.push({ day: 0, date: null, disabled: true, closed: false, selected: false });
     for (let d = 1; d <= dim; d++) {
       const date = new Date(viewY, viewM, d);
+      const past = isPastDate(date, t);
+      const closed = !past && !isOpenDate(date);
       cells.push({
         day: d,
         date,
-        disabled: !isBookableDate(date, t),
-        // Tachamos solo los días cerrados (domingos); los pasados solo se atenúan.
-        closed: !isBookableDate(date, t) && !isPastDate(date, t),
+        disabled: past || closed,
+        // Tachamos solo los días cerrados; los pasados solo se atenúan.
+        closed,
         selected: !!selected && date.getTime() === selected.getTime(),
       });
     }
     const atFirstMonth = viewY === t.getFullYear() && viewM === t.getMonth();
     return { cells, atFirstMonth };
-  }, [viewY, viewM, selected]);
+  }, [viewY, viewM, selected, isOpenDate]);
 
   return (
     <div className="card overflow-hidden p-0 w-full sm:max-w-[340px] lg:max-w-none mx-auto">

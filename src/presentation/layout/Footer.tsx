@@ -10,9 +10,14 @@ export default function Footer() {
         <p style={{ margin: 0, fontSize: 13, color: "var(--color-neutral-500)" }}>
           {`© ${new Date().getFullYear()} FERO · Barbershop & Tattoo Studio`}
         </p>
-        <Link href="/login" className="footer-link">
-          Acceso
-        </Link>
+        <div className="flex items-center gap-5">
+          <Link href="/privacidad" className="footer-link">
+            Privacidad
+          </Link>
+          <Link href="/login" className="footer-link">
+            Acceso
+          </Link>
+        </div>
       </div>
     </footer>
   );

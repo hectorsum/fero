@@ -1,6 +1,7 @@
+import { BARBER_EMAIL } from "@/infrastructure/config/shop";
+
 const ADDRESS = "Av Republica de Panama 5920, Miraflores";
 const SHOP_PHONE = "999 333 222";
-const BARBER_EMAIL = "fero@gmail.com";
 
 const kicker: React.CSSProperties = {
   fontFamily: "var(--font-fero-mono), monospace",

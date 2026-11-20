@@ -14,11 +14,12 @@ interface Props {
   selectDate: (date: Date) => void;
   selectService: (service: ServiceType) => void;
   retrySlots: () => void;
+  isOpenDate: (date: Date) => boolean;
 }
 
 const hintStyle = { fontSize: 14, color: "var(--color-neutral-600)" };
 
-export default function StepHorario({ s, patch, isCorte, isTattoo, shiftMonth, selectDate, selectService, retrySlots }: Props) {
+export default function StepHorario({ s, patch, isCorte, isTattoo, shiftMonth, selectDate, selectService, retrySlots, isOpenDate }: Props) {
   return (
     <div className="flex flex-col gap-8">
       {isCorte && (
@@ -52,7 +53,7 @@ export default function StepHorario({ s, patch, isCorte, isTattoo, shiftMonth, s
       <div className="flex flex-col gap-3.5">
         <div className="kicker">Elige una fecha y hora *</div>
         <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6 lg:gap-8 items-start">
-          <Calendar viewY={s.viewY} viewM={s.viewM} selected={s.date} onSelect={selectDate} onShiftMonth={shiftMonth} />
+          <Calendar viewY={s.viewY} viewM={s.viewM} selected={s.date} onSelect={selectDate} onShiftMonth={shiftMonth} isOpenDate={isOpenDate} />
           <div className="flex flex-col gap-3.5">
             <div style={{ fontSize: 14, color: "var(--color-neutral-700)" }}>
               {s.date ? `Horarios disponibles — ${fmtDate(s.date)}` : "Selecciona un día en el calendario para ver los horarios."}

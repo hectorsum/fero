@@ -22,10 +22,12 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // getClaims valida la firma del JWT (no basta con leer la cookie).
-  const { data } = await supabase.auth.getClaims();
+  // getUser consulta a Supabase Auth: detecta sesiones cerradas o revocadas aunque el JWT siga
+  // firmado y sin expirar. Debe ser la misma verificación que hace la página (requireAdmin);
+  // si el proxy fuera más permisivo, /login → /admin → /login entraría en un bucle.
+  const { data } = await supabase.auth.getUser();
   let isAdmin = false;
-  if (data?.claims?.sub) {
+  if (data?.user) {
     const { data: admin } = await supabase.rpc("is_admin");
     isAdmin = admin === true;
   }

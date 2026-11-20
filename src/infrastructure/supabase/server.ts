@@ -5,8 +5,10 @@ import { supabaseEnv } from "./env";
 
 /** Cliente para Server Components / Server Actions. Separado de ./client.ts porque usa next/headers. */
 export async function createServerClient() {
-  const { url, anonKey } = supabaseEnv();
+  // cookies() primero: marca la ruta como dinámica antes de cualquier error de configuración,
+  // para que Next no intente pre-generar páginas que dependen de la sesión.
   const cookieStore = await cookies();
+  const { url, anonKey } = supabaseEnv();
   return createSsrServerClient<Database>(url, anonKey, {
     cookies: {
       getAll: () => cookieStore.getAll(),

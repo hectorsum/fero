@@ -1,14 +1,15 @@
 // Crea (o confirma que existe) un usuario de Supabase Auth con correo y contraseña,
 // y lo registra como admin del panel (tabla public.admins, migración 0003).
 // Uso: SUPABASE_SERVICE_ROLE_KEY=... node --env-file=.env.local scripts/create-user.mjs
-// Lee NEXT_PUBLIC_SUPABASE_URL, FERO_ADMIN_EMAIL y FERO_ADMIN_PASSWORD del entorno.
+// Lee SUPABASE_URL (o NEXT_PUBLIC_SUPABASE_URL), FERO_ADMIN_EMAIL y FERO_ADMIN_PASSWORD del entorno.
 // Nunca imprime la contraseña ni la service role key.
 import { createClient } from "@supabase/supabase-js";
 
-const { NEXT_PUBLIC_SUPABASE_URL: url, SUPABASE_SERVICE_ROLE_KEY: serviceKey, FERO_ADMIN_EMAIL: email, FERO_ADMIN_PASSWORD: password } =
+const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const { SUPABASE_SERVICE_ROLE_KEY: serviceKey, FERO_ADMIN_EMAIL: email, FERO_ADMIN_PASSWORD: password } =
   process.env;
 
-const missing = Object.entries({ NEXT_PUBLIC_SUPABASE_URL: url, SUPABASE_SERVICE_ROLE_KEY: serviceKey, FERO_ADMIN_EMAIL: email, FERO_ADMIN_PASSWORD: password })
+const missing = Object.entries({ SUPABASE_URL: url, SUPABASE_SERVICE_ROLE_KEY: serviceKey, FERO_ADMIN_EMAIL: email, FERO_ADMIN_PASSWORD: password })
   .filter(([, v]) => !v)
   .map(([k]) => k);
 if (missing.length) {

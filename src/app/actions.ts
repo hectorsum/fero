@@ -11,7 +11,7 @@ import { GoogleCalendarConnectionRepo } from "@/infrastructure/google/GoogleCale
 import { GoogleCalendarSync } from "@/infrastructure/google/GoogleCalendarSync";
 import { isGoogleConfigured } from "@/infrastructure/google/oauth";
 import { createServiceClient } from "@/infrastructure/supabase/service";
-import { createServerClient } from "@/infrastructure/supabase/server";
+import { createAnonClient } from "@/infrastructure/supabase/anon";
 import { SupabaseAvailabilityRepository } from "@/infrastructure/supabase/SupabaseAvailabilityRepository";
 import { SupabaseBookingRepository } from "@/infrastructure/supabase/SupabaseBookingRepository";
 
@@ -29,7 +29,9 @@ const MESSAGES: Record<ActionErrorCode, string> = {
 };
 
 async function deps() {
-  const db = await createServerClient();
+  // Siempre como visitante anónimo: con la sesión de admin abierta, el rol sería authenticated
+  // y la base (a propósito) solo deja crear citas a anon.
+  const db = createAnonClient();
   // La conexión de Google solo es legible con service_role; las citas y la disponibilidad van con anon (RLS).
   const service = isGoogleConfigured() ? createServiceClient() : null;
   const calendar = service ? new GoogleCalendarSync(new GoogleCalendarConnectionRepo(service), SHOP_TIMEZONE) : undefined;

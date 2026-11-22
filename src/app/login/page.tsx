@@ -4,8 +4,8 @@ import Link from "next/link";
 import LoginForm from "@/presentation/auth/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Acceso — FERO",
-  robots: { index: false },
+  title: "Acceso",
+  robots: { index: false, follow: false },
 };
 
 export default function LoginPage() {

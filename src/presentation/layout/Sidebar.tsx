@@ -1,4 +1,4 @@
-import { BARBER_EMAIL, SHOP_ADDRESS, SHOP_PHONE } from "@/infrastructure/config/shop";
+import { BARBER_EMAIL, SHOP_ADDRESS, SHOP_PHONE, SOCIALS } from "@/infrastructure/config/shop";
 
 const kicker: React.CSSProperties = {
   fontFamily: "var(--font-fero-mono), monospace",
@@ -61,13 +61,15 @@ function SocialLink({
   icon,
   name,
   handle,
+  url,
 }: {
   icon: React.ReactNode;
   name: string;
   handle: string;
+  url: string;
 }) {
   return (
-    <a href="#" style={{ display: "flex", gap: 12, alignItems: "center", textDecoration: "none" }}>
+    <a href={url || "#"} {...(url ? { target: "_blank", rel: "noopener noreferrer" } : {})} style={{ display: "flex", gap: 12, alignItems: "center", textDecoration: "none" }}>
       <svg
         width={18}
         height={18}
@@ -88,6 +90,18 @@ function SocialLink({
     </a>
   );
 }
+
+const SOCIAL_ICONS: Record<(typeof SOCIALS)[number]["id"], React.ReactNode> = {
+  instagram: (
+    <>
+      <rect x={2} y={2} width={20} height={20} rx={5} />
+      <circle cx={12} cy={12} r={4} />
+      <circle cx={17.5} cy={6.5} r={0.8} fill="var(--color-accent)" />
+    </>
+  ),
+  tiktok: <path d="M9 12a4 4 0 1 0 4 4V4c.55 1.9 2.1 3.5 4 4" />,
+  facebook: <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />,
+};
 
 export default function Sidebar() {
   return (
@@ -183,27 +197,9 @@ export default function Sidebar() {
         }}
       >
         <div style={kicker}>Síguenos</div>
-        <SocialLink
-          icon={
-            <>
-              <rect x={2} y={2} width={20} height={20} rx={5} />
-              <circle cx={12} cy={12} r={4} />
-              <circle cx={17.5} cy={6.5} r={0.8} fill="var(--color-accent)" />
-            </>
-          }
-          name="Instagram"
-          handle="@fero.cuts"
-        />
-        <SocialLink
-          icon={<path d="M9 12a4 4 0 1 0 4 4V4c.55 1.9 2.1 3.5 4 4" />}
-          name="TikTok"
-          handle="@feroink"
-        />
-        <SocialLink
-          icon={<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />}
-          name="Facebook"
-          handle="Fero Barbershop & Tattoo"
-        />
+        {SOCIALS.map((n) => (
+          <SocialLink key={n.id} icon={SOCIAL_ICONS[n.id]} name={n.name} handle={n.handle} url={n.url} />
+        ))}
       </div>
     </aside>
   );

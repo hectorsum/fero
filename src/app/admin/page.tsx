@@ -29,7 +29,7 @@ const GOOGLE_NOTICES: Record<string, string> = {
 };
 
 export const metadata: Metadata = {
-  title: "Admin — FERO",
+  title: "Admin",
   robots: { index: false, follow: false },
 };
 

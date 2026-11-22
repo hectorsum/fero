@@ -5,6 +5,34 @@ export const BARBER_WHATSAPP = "5215512345678";
 export const BARBER_EMAIL = "fero@gmail.com";
 export const SHOP_ADDRESS = "Av Republica de Panama 5920, Miraflores";
 export const SHOP_PHONE = "999 333 222";
+/** Dirección postal estructurada (datos estructurados / SEO). */
+export const SHOP_POSTAL_ADDRESS = {
+  streetAddress: "Av. República de Panamá 5920",
+  addressLocality: "Miraflores",
+  addressRegion: "Lima",
+  addressCountry: "PE",
+} as const;
+export const SHOP_NAME = "FERO";
+export const SHOP_DESCRIPTION = "Agenda tu cita con Fernando Rojas «Fero» — corte, grooming y tatuaje en Miraflores, Lima.";
+
+/** Redes sociales. `url` vacío = aún no la conocemos: se muestra igual pero no va a los datos estructurados. */
+export const SOCIALS = [
+  { id: "instagram", name: "Instagram", handle: "@fero.cuts", url: "" },
+  { id: "tiktok", name: "TikTok", handle: "@feroink", url: "" },
+  { id: "facebook", name: "Facebook", handle: "Fero Barbershop & Tattoo", url: "" },
+] as const satisfies readonly { id: string; name: string; handle: string; url: string }[];
+
+/**
+ * URL pública del sitio, sin "/" final. Función (no constante) porque shop.ts también se usa en el
+ * navegador y allí no existen estas variables. En Vercel, sin SITE_URL, usa el dominio de producción.
+ */
+export function siteUrl(): string {
+  const env = process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  const url = env || (vercel ? `https://${vercel}` : process.env.NODE_ENV !== "production" ? "http://localhost:3000" : "");
+  if (!url) throw new Error("Falta SITE_URL (ver .env.example).");
+  return url.replace(/\/+$/, "");
+}
 
 export const SERVICES: readonly { id: ServiceType; name: string; durationMin: number }[] = [
   { id: "completo", name: "Servicio completo (Corte + Barba)", durationMin: 120 },

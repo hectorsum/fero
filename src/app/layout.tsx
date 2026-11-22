@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { SHOP_DESCRIPTION, siteUrl } from "@/infrastructure/config/shop";
+import { DEFAULT_TITLE, OPEN_GRAPH } from "@/presentation/seo/metadata";
 import "./globals.css";
 
 // Fuentes servidas desde el repo (subset latín, licencia OFL; origen: Fontsource).
@@ -29,8 +31,18 @@ const dmMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "FERO — Barbershop · Tattoo Studio",
-  description: "Agenda tu cita con Fernando Rojas «Fero» — corte, grooming y tatuaje.",
+  metadataBase: new URL(siteUrl()),
+  title: { default: DEFAULT_TITLE, template: "%s — FERO" },
+  description: SHOP_DESCRIPTION,
+  // El canonical va en cada página: si estuviera aquí, todas heredarían el de la portada.
+  openGraph: OPEN_GRAPH,
+  twitter: { card: "summary_large_image", title: DEFAULT_TITLE, description: SHOP_DESCRIPTION },
+  robots: { index: true, follow: true },
+  icons: { icon: "/favicon.ico", apple: "/fero-logo.png" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1d1d1d",
 };
 
 export default function RootLayout({

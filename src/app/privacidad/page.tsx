@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { BARBER_EMAIL } from "@/infrastructure/config/shop";
+import { OPEN_GRAPH } from "@/presentation/seo/metadata";
 
 export const metadata: Metadata = {
-  title: "Política de privacidad — FERO",
+  title: "Política de privacidad",
   description: "Qué datos guarda FERO al agendar una cita, para qué se usan y cómo se usa el acceso a Google Calendar.",
+  alternates: { canonical: "/privacidad" },
+  openGraph: { ...OPEN_GRAPH, url: "/privacidad", title: "Política de privacidad — FERO" },
 };
 
 const UPDATED = "22 de noviembre de 2026";

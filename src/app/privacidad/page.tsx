@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: "Qué datos guarda FERO al agendar una cita, para qué se usan y cómo se usa el acceso a Google Calendar.",
 };
 
-const UPDATED = "20 de noviembre de 2026";
+const UPDATED = "22 de noviembre de 2026";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -57,13 +57,19 @@ export default function PrivacyPage() {
             Si solicitas un tatuaje, los datos del formulario (estilo, tamaño, zona, idea y fecha preferida) no se guardan en nuestro sistema: se
             abren en WhatsApp para que tú mismo nos envíes el mensaje.
           </p>
+          <p>
+            Para frenar el spam también registramos tu dirección IP, junto con tu teléfono y correo, en forma de resumen cifrado
+            irreversible (hash): sirve solo para contar cuántas reservas se intentan en poco tiempo, no permite recuperar el dato
+            original y se descarta pasadas 24 horas.
+          </p>
           <p>No pedimos datos de pago ni datos sensibles, y no usamos cookies de publicidad ni de analítica.</p>
         </Section>
 
         <Section title="Para qué los usamos">
           <ul>
             <li>Reservar tu horario y evitar que otra persona tome el mismo.</li>
-            <li>Contactarte sobre tu cita (confirmaciones, cambios o cancelaciones).</li>
+            <li>Enviarte un correo de confirmación con los datos de tu cita y contactarte sobre ella (cambios o cancelaciones).</li>
+            <li>Proteger el formulario de reservas contra spam y abusos.</li>
           </ul>
           <p>No vendemos ni cedemos tus datos, ni los usamos para enviarte publicidad.</p>
         </Section>
@@ -120,7 +126,15 @@ export default function PrivacyPage() {
               <strong>Google</strong>: calendario del administrador, si está conectado.
             </li>
             <li>
-              <strong>Resend</strong>: envío del aviso de cada cita nueva al correo del administrador.
+              <strong>Resend</strong>: envío del correo de confirmación al cliente y del aviso de cada cita nueva al administrador.
+            </li>
+            <li>
+              <strong>Cloudflare Turnstile</strong>: verificación anti-spam al confirmar una cita. Cloudflare analiza señales del
+              navegador (como la IP) para distinguir personas de bots, según su propia{" "}
+              <a href="https://www.cloudflare.com/privacypolicy/" className="legal-link" target="_blank" rel="noopener noreferrer">
+                política de privacidad
+              </a>
+              .
             </li>
             <li>
               <strong>WhatsApp</strong>: solo si eliges enviarnos una solicitud de tatuaje.

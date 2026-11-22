@@ -162,3 +162,22 @@ describe("Calendario externo (Google)", () => {
     expect(await get({ date: DATE, service: "corte" })).toEqual(HOURS);
   });
 });
+
+describe("Límite de citas activas por contacto", () => {
+  it("máximo 2 citas futuras por teléfono (solo dígitos) o correo (sin mayúsculas)", async () => {
+    await createBooking(input({ time: "09:00" }));
+    await createBooking(input({ time: "10:00", phone: "999-333-122", email: "ANA@Correo.com" }));
+    await rejectsWith(createBooking(input({ time: "11:00", email: "nuevo@correo.com" })), "TOO_MANY_ACTIVE_BOOKINGS");
+    await rejectsWith(createBooking(input({ time: "11:00", phone: "111", email: "ANA@correo.com" })), "TOO_MANY_ACTIVE_BOOKINGS");
+    await createBooking(input({ time: "11:00", phone: "111 222", email: "nuevo@correo.com" }));
+  });
+
+  it("las citas ya pasadas no cuentan", async () => {
+    await createBooking(input({ date: "2026-11-16", time: "09:00" }));
+    await createBooking(input({ date: "2026-11-16", time: "10:00" }));
+    // Ya es más tarde que esas citas en Lima.
+    const later = makeCreateBooking({ repo, availability, schedule, now: () => new Date("2026-11-16T19:00:00Z") });
+    await later(input({ date: "2026-11-17", time: "09:00" }));
+    expect(repo.items).toHaveLength(3);
+  });
+});

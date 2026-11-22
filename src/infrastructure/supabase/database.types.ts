@@ -71,6 +71,7 @@ export type Database = {
       get_availability: { Args: Record<string, never>; Returns: Json };
       is_admin: { Args: Record<string, never>; Returns: boolean };
       consume_login_attempt: { Args: { p_key: string; p_max: number; p_window_seconds: number }; Returns: number };
+      consume_rate_limit: { Args: { p_key: string; p_max: number; p_window_seconds: number }; Returns: number };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };

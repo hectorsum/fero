@@ -10,7 +10,7 @@ import StepIndicator from "./StepIndicator";
 import StepMode from "./StepMode";
 
 export default function BookingWizard({ availability }: { availability: Availability }) {
-  const { s, patch, valid, isCorte, isTattoo, goNext, goBack, restart, shiftMonth, selectDate, selectService, retrySlots, isOpenDate } =
+  const { s, patch, valid, isCorte, isTattoo, goNext, goBack, restart, shiftMonth, selectDate, selectService, retrySlots, isOpenDate, setCaptchaToken } =
     useBookingWizard(availability);
 
   return (
@@ -41,7 +41,7 @@ export default function BookingWizard({ availability }: { availability: Availabi
           isOpenDate={isOpenDate}
         />
       )}
-      {s.step === 3 && !s.done && <StepConfirmar s={s} isTattoo={isTattoo} />}
+      {s.step === 3 && !s.done && <StepConfirmar s={s} isTattoo={isTattoo} onCaptchaToken={setCaptchaToken} />}
       {s.done && <StepDone s={s} isTattoo={isTattoo} onRestart={restart} />}
 
       {s.error && !s.done && (

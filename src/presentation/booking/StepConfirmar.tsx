@@ -1,6 +1,7 @@
 import { SHOP_SCHEDULE, serviceName } from "@/infrastructure/config/shop";
 import type { WizardState } from "@/presentation/hooks/useBookingWizard";
 import { fmtDate } from "./format";
+import TurnstileWidget from "./TurnstileWidget";
 
 function rows(s: WizardState, isTattoo: boolean) {
   const out = [
@@ -24,7 +25,15 @@ function rows(s: WizardState, isTattoo: boolean) {
   return out;
 }
 
-export default function StepConfirmar({ s, isTattoo }: { s: WizardState; isTattoo: boolean }) {
+export default function StepConfirmar({
+  s,
+  isTattoo,
+  onCaptchaToken,
+}: {
+  s: WizardState;
+  isTattoo: boolean;
+  onCaptchaToken: (token: string | null) => void;
+}) {
   return (
     <div className="card flex flex-col gap-0 p-6 sm:py-10 sm:px-11">
       <div className="kicker" style={{ marginBottom: 22 }}>
@@ -45,6 +54,11 @@ export default function StepConfirmar({ s, isTattoo }: { s: WizardState; isTatto
           ? "Al confirmar se abrirá WhatsApp con los datos de tu sesión, listos para enviarse a Fero. Solo tienes que enviar el mensaje."
           : "Al confirmar tu cita quedará agendada y verás la confirmación en pantalla."}
       </p>
+      {!isTattoo && (
+        <div style={{ marginTop: 18 }}>
+          <TurnstileWidget key={s.captchaNonce} onToken={onCaptchaToken} />
+        </div>
+      )}
     </div>
   );
 }

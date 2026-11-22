@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { buildWhatsAppLink } from "@/application/build-whatsapp-link";
 import { createBookingAction, getAvailableSlotsAction } from "@/app/actions";
 import type { Availability } from "@/domain/entities/Availability";
@@ -36,6 +36,12 @@ export interface WizardState {
   slotsStatus: SlotsStatus;
   submitting: boolean;
   error: string | null;
+  /** Token de Turnstile vigente (un solo uso). */
+  captchaToken: string | null;
+  /** Cambia para volver a montar el widget y pedir un token nuevo. */
+  captchaNonce: number;
+  /** Honeypot: una persona no lo ve ni lo rellena. */
+  website: string;
 }
 
 export type Patch = (p: Partial<WizardState>) => void;
@@ -65,6 +71,9 @@ function initialState(): WizardState {
     slotsStatus: "idle",
     submitting: false,
     error: null,
+    captchaToken: null,
+    captchaNonce: 0,
+    website: "",
   };
 }
 
@@ -75,6 +84,7 @@ export function validStep(s: WizardState): boolean {
     const details = s.mode === "tatuaje" ? s.tStyle !== "" && s.tSize !== "" : s.service !== null;
     return details && !!s.date && !!s.time;
   }
+  if (s.step === 3) return s.mode === "tatuaje" || !!s.captchaToken;
   return true;
 }
 
@@ -83,6 +93,11 @@ export function useBookingWizard(availability: Availability) {
   const patch: Patch = (p) => setS((prev) => ({ ...prev, ...p }));
   // Descarta respuestas de peticiones de horarios que ya no corresponden a la selección actual.
   const slotsRequest = useRef(0);
+  // Momento en que se abrió el asistente: el servidor rechaza confirmaciones demasiado rápidas.
+  const openedAt = useRef(0);
+  useEffect(() => {
+    openedAt.current = performance.now();
+  }, []);
 
   const isCorte = s.mode === "corte";
   const isTattoo = s.mode === "tatuaje";
@@ -142,8 +157,12 @@ export function useBookingWizard(availability: Availability) {
   };
   const retrySlots = () => void loadSlots(s.date, s.service);
 
+  /** Los tokens de Turnstile son de un solo uso: tras cualquier intento fallido se pide otro. */
+  const freshCaptcha = { captchaToken: null, captchaNonce: s.captchaNonce + 1 };
+  const setCaptchaToken = useCallback((captchaToken: string | null) => setS((prev) => ({ ...prev, captchaToken })), []);
+
   async function confirmBooking() {
-    if (!s.service || !s.date || !s.time) return;
+    if (!s.service || !s.date || !s.time || !s.captchaToken) return;
     patch({ submitting: true, error: null });
     try {
       const res = await createBookingAction({
@@ -154,18 +173,21 @@ export function useBookingWizard(availability: Availability) {
         phone: s.phone,
         email: s.email,
         notes: s.notes,
+        captchaToken: s.captchaToken,
+        website: s.website,
+        elapsedMs: Math.round(performance.now() - openedAt.current),
       });
       if (res.ok) {
         patch({ submitting: false, done: true });
       } else if (res.code === "SLOT_UNAVAILABLE") {
         // Alguien tomó el horario: volvemos a elegir hora con la lista actualizada.
-        patch({ submitting: false, step: 2, time: null, error: res.message });
+        patch({ submitting: false, step: 2, time: null, error: res.message, ...freshCaptcha });
         void loadSlots(s.date, s.service);
       } else {
-        patch({ submitting: false, error: res.message });
+        patch({ submitting: false, error: res.message, ...freshCaptcha });
       }
     } catch {
-      patch({ submitting: false, error: NETWORK_ERROR });
+      patch({ submitting: false, error: NETWORK_ERROR, ...freshCaptcha });
     }
   }
 
@@ -202,6 +224,7 @@ export function useBookingWizard(availability: Availability) {
   };
   const restart = () => {
     slotsRequest.current++;
+    openedAt.current = performance.now();
     setS(initialState());
   };
 
@@ -224,5 +247,6 @@ export function useBookingWizard(availability: Availability) {
     selectService,
     retrySlots,
     isOpenDate,
+    setCaptchaToken,
   };
 }

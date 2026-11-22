@@ -33,3 +33,7 @@ export function createContactInfo(input: ContactInfo): ContactInfo {
   if (!isValidEmail(c.email)) throw new InvalidContactInfoError("email");
   return c;
 }
+
+/** Claves para comparar contactos: el teléfono solo con dígitos y el correo en minúsculas. */
+export const phoneKey = (phone: string) => phone.replace(/\D/g, "");
+export const emailKey = (email: string) => email.trim().toLowerCase();

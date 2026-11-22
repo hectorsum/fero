@@ -120,6 +120,9 @@ export default function PrivacyPage() {
               <strong>Google</strong>: calendario del administrador, si está conectado.
             </li>
             <li>
+              <strong>Resend</strong>: envío del aviso de cada cita nueva al correo del administrador.
+            </li>
+            <li>
               <strong>WhatsApp</strong>: solo si eliges enviarnos una solicitud de tatuaje.
             </li>
           </ul>

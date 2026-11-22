@@ -10,6 +10,7 @@ import { SHOP_SCHEDULE, SHOP_TIMEZONE } from "@/infrastructure/config/shop";
 import { GoogleCalendarConnectionRepo } from "@/infrastructure/google/GoogleCalendarConnection";
 import { GoogleCalendarSync } from "@/infrastructure/google/GoogleCalendarSync";
 import { isGoogleConfigured } from "@/infrastructure/google/oauth";
+import { ResendBookingNotifier, resendEnv } from "@/infrastructure/email/ResendBookingNotifier";
 import { createServiceClient } from "@/infrastructure/supabase/service";
 import { createAnonClient } from "@/infrastructure/supabase/anon";
 import { SupabaseAvailabilityRepository } from "@/infrastructure/supabase/SupabaseAvailabilityRepository";
@@ -81,9 +82,19 @@ export async function createBookingAction(input: CreateBookingInput): Promise<Ac
       email: str(input?.email),
       notes: str(input?.notes),
     });
-    // El evento en Google se crea después de responder: la cita ya está guardada y un fallo de Google
+    // El aviso por correo y el evento en Google se crean después de responder: la cita ya está guardada y un fallo de Google
     // no debe afectar al cliente (queda registrado en el panel).
     const { calendar, service } = d;
+    const mail = resendEnv();
+    if (mail) {
+      after(async () => {
+        try {
+          await new ResendBookingNotifier(mail).bookingCreated(booking);
+        } catch (e) {
+          console.error("[booking email]", e);
+        }
+      });
+    }
     if (calendar && service) {
       after(async () => {
         try {

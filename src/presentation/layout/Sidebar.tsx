@@ -1,7 +1,4 @@
-import { BARBER_EMAIL } from "@/infrastructure/config/shop";
-
-const ADDRESS = "Av Republica de Panama 5920, Miraflores";
-const SHOP_PHONE = "999 333 222";
+import { BARBER_EMAIL, SHOP_ADDRESS, SHOP_PHONE } from "@/infrastructure/config/shop";
 
 const kicker: React.CSSProperties = {
   fontFamily: "var(--font-fero-mono), monospace",
@@ -122,7 +119,7 @@ export default function Sidebar() {
             />
           }
           label="Dirección"
-          value={ADDRESS}
+          value={SHOP_ADDRESS}
         />
         <ContactRow
           icon={

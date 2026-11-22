@@ -3,6 +3,8 @@ import type { ShopSchedule } from "@/domain/services/scheduling";
 
 export const BARBER_WHATSAPP = "5215512345678";
 export const BARBER_EMAIL = "fero@gmail.com";
+export const SHOP_ADDRESS = "Av Republica de Panama 5920, Miraflores";
+export const SHOP_PHONE = "999 333 222";
 
 export const SERVICES: readonly { id: ServiceType; name: string; durationMin: number }[] = [
   { id: "completo", name: "Servicio completo (Corte + Barba)", durationMin: 120 },

@@ -29,7 +29,10 @@ export async function clientIp(): Promise<string> {
 }
 
 async function allow(limiter: RateLimiter, key: string, limit: { max: number; windowSeconds: number }) {
-  return (await limiter.consume(hashKey(key), limit.max, limit.windowSeconds)) === 0;
+  const wait = await limiter.consume(hashKey(key), limit.max, limit.windowSeconds);
+  // Solo el tipo de límite (la parte antes del valor), nunca la IP, el teléfono ni el correo.
+  if (wait > 0) console.warn(`[rate-limit] límite alcanzado: ${key.split(":").slice(0, 2).join(":")} (espera ${wait}s)`);
+  return wait === 0;
 }
 
 export const allowBookingFromIp = (limiter: RateLimiter, ip: string) => allow(limiter, `booking:ip:${ip}`, BOOKING_RATE_LIMITS.createPerIp);

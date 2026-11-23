@@ -58,6 +58,7 @@ describe("plantillas", () => {
     }
     expect(text).toContain(mapsUrl(SHOP_ADDRESS));
     expect(html).toContain('lang="es"');
+    expect(html).toContain("calendar.google.com/calendar/render");
     expect(html).toContain("https://fero.ink/email/logo.png");
     expect(html).toContain("https://fero.ink/email/banner.jpg");
     expect(mapsUrl("Av 1, Lima")).toBe("https://www.google.com/maps/search/?api=1&query=Av%201%2C%20Lima");
@@ -100,6 +101,9 @@ describe("notificadores", () => {
     expect(headers.Authorization).toBe("Bearer re_test");
     expect(headers["Idempotency-Key"]).toBe("booking-customer-b1");
     expect(body).toMatchObject({ from: env.from, to: ["ana@example.com"], reply_to: BARBER_EMAIL });
+    expect(body.attachments).toHaveLength(1);
+    expect(body.attachments[0].filename).toBe("cita-fero.ics");
+    expect(Buffer.from(body.attachments[0].content, "base64").toString("utf8")).toContain("BEGIN:VEVENT");
   });
 
   it("cliente: con el remitente de prueba no envía y avisa", async () => {
@@ -117,6 +121,7 @@ describe("notificadores", () => {
     const { headers, body } = sent(f);
     expect(headers["Idempotency-Key"]).toBe("booking-b1");
     expect(body).toMatchObject({ to: ["admin@example.com"], reply_to: "ana@example.com" });
+    expect(body).not.toHaveProperty("attachments");
   });
 
   it("propaga errores de Resend", async () => {

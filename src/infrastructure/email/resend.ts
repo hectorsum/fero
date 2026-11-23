@@ -38,6 +38,9 @@ export async function sendEmail(
       subject: msg.subject,
       text: msg.text,
       html: msg.html,
+      ...(msg.attachments?.length
+        ? { attachments: msg.attachments.map((a) => ({ filename: a.filename, content: Buffer.from(a.content, "utf8").toString("base64") })) }
+        : {}),
     }),
     signal: AbortSignal.timeout(8000),
   });

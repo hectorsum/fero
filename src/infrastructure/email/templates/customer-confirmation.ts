@@ -1,7 +1,8 @@
 import { render } from "@react-email/components";
 import { createElement } from "react";
 import type { Booking } from "@/domain/entities/Booking";
-import { BARBER_WHATSAPP, SHOP_ADDRESS, SHOP_PHONE, serviceName } from "@/infrastructure/config/shop";
+import { BARBER_WHATSAPP, SHOP_ADDRESS, SHOP_NAME, SHOP_PHONE, SHOP_TIMEZONE, serviceName } from "@/infrastructure/config/shop";
+import { bookingEvent, googleCalendarUrl, icsFile } from "../calendar";
 import CustomerConfirmationEmail, { type CustomerConfirmationProps } from "./CustomerConfirmationEmail";
 import { emailAssetsUrl, formatDate, oneLine, type EmailContent } from "./shared";
 
@@ -10,8 +11,20 @@ export const whatsappUrl = (phone: string) => `https://wa.me/${phone.replace(/\D
 
 const CANCEL_TEXT = "Si necesitas cancelar o reprogramar, avísanos por WhatsApp con anticipación";
 
+/** Evento para el calendario del cliente. */
+export function customerEvent(b: Booking) {
+  const service = serviceName(b.service);
+  return bookingEvent(b, {
+    timeZone: SHOP_TIMEZONE,
+    title: `${service} en ${SHOP_NAME}`,
+    description: `${service} (${b.durationMin} min).\n${CANCEL_TEXT}: ${whatsappUrl(BARBER_WHATSAPP)}`,
+    location: `${SHOP_ADDRESS}, Lima`,
+  });
+}
+
 export function customerConfirmationProps(b: Booking): CustomerConfirmationProps {
   return {
+    googleCalendarUrl: googleCalendarUrl(customerEvent(b)),
     name: b.contact.name,
     service: serviceName(b.service),
     dateLabel: formatDate(b.date),
@@ -33,6 +46,7 @@ export async function customerConfirmationEmail(b: Booking): Promise<EmailConten
     subject: oneLine(`Tu cita en FERO — ${p.dateLabel}, ${p.time}`),
     // React escapa todo lo que viene del cliente.
     html: await render(createElement(CustomerConfirmationEmail, p)),
+    attachments: [{ filename: "cita-fero.ics", content: icsFile(customerEvent(b)) }],
     text: [
       `Hola, ${p.name}:`,
       "",
@@ -45,6 +59,8 @@ export async function customerConfirmationEmail(b: Booking): Promise<EmailConten
       `Dirección: ${p.address}`,
       `Teléfono: ${p.shopPhone}`,
       `Cómo llegar: ${p.mapsUrl}`,
+      `Agregar a Google Calendar: ${p.googleCalendarUrl}`,
+      "(También va adjunto el archivo cita-fero.ics para Apple Calendar u Outlook.)",
       "",
       `${CANCEL_TEXT}: ${p.whatsappUrl}`,
       "",

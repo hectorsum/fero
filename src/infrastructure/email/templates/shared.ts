@@ -19,8 +19,15 @@ export function emailAssetsUrl(): string {
   return /\/\/(localhost|127\.0\.0\.1)(:|$)/.test(url) ? PRODUCTION_URL : url;
 }
 
+export interface EmailAttachment {
+  filename: string;
+  /** Contenido en texto (se envía en base64). */
+  content: string;
+}
+
 export interface EmailContent {
   subject: string;
   text: string;
   html: string;
+  attachments?: EmailAttachment[];
 }

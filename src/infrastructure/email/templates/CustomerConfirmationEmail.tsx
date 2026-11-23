@@ -13,6 +13,8 @@ export interface CustomerConfirmationProps {
   mapsUrl: string;
   whatsappUrl: string;
   cancelText: string;
+  /** Enlace que abre Google Calendar con la cita ya rellenada. */
+  googleCalendarUrl: string;
   assetsUrl: string;
 }
 
@@ -41,7 +43,19 @@ export default function CustomerConfirmationEmail(p: CustomerConfirmationProps) 
         ]}
       />
 
-      <Section style={{ margin: "0 0 20px" }}>
+      <Section style={{ margin: "0 0 8px" }}>
+        <Button
+          href={p.googleCalendarUrl}
+          style={{ ...button, backgroundColor: "#ffffff", color: colors.dark, border: `1px solid ${colors.dark}`, marginBottom: 8 }}
+        >
+          📅 Agregar a Google Calendar
+        </Button>
+        <Text style={{ margin: "4px 0 0", fontSize: 13, lineHeight: "20px", color: colors.muted }}>
+          ¿Usas Apple Calendar u Outlook? Abre el archivo <strong>cita-fero.ics</strong> adjunto.
+        </Text>
+      </Section>
+
+      <Section style={{ margin: "12px 0 20px" }}>
         <Button href={p.mapsUrl} style={{ ...button, backgroundColor: colors.dark, color: "#ffffff", marginRight: 8, marginBottom: 8 }}>
           Cómo llegar
         </Button>
@@ -71,5 +85,7 @@ CustomerConfirmationEmail.PreviewProps = {
   mapsUrl: "https://www.google.com/maps/search/?api=1&query=Av%20Republica%20de%20Panama%205920%2C%20Miraflores",
   whatsappUrl: "https://wa.me/5215512345678",
   cancelText: "Si necesitas cancelar o reprogramar, avísanos por WhatsApp con anticipación",
+  googleCalendarUrl:
+    "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Servicio+completo+en+FERO&dates=20261125T190000Z%2F20261125T210000Z",
   assetsUrl: "https://fero.ink",
 } satisfies CustomerConfirmationProps;

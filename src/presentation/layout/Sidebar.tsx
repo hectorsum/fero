@@ -174,7 +174,7 @@ export default function Sidebar() {
       >
         <div style={kicker}>Horario</div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, color: "var(--color-neutral-700)" }}>
-          <span>Lun – Sáb</span>
+          <span>Lun - Sáb</span>
           <span style={{ fontFeatureSettings: "'tnum'" }}>9:00 – 12:00</span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, color: "var(--color-neutral-700)" }}>

@@ -1,23 +1,23 @@
 import type { ServiceType } from "@/domain/entities/Booking";
 import type { ShopSchedule } from "@/domain/services/scheduling";
 
-export const BARBER_WHATSAPP = "5215512345678";
-export const BARBER_EMAIL = "fero@gmail.com";
-export const SHOP_ADDRESS = "Av Republica de Panama 5920, Miraflores";
-export const SHOP_PHONE = "999 333 222";
+export const BARBER_WHATSAPP = "922041346";
+export const BARBER_EMAIL = "feroink@gmail.com";
+export const SHOP_ADDRESS = "Calle Enrique Barron 377, Barranco";
+export const SHOP_PHONE = "922041346";
 /** Dirección postal estructurada (datos estructurados / SEO). */
 export const SHOP_POSTAL_ADDRESS = {
-  streetAddress: "Av. República de Panamá 5920",
-  addressLocality: "Miraflores",
+  streetAddress: "Calle Enrique Barron 377",
+  addressLocality: "Barranco",
   addressRegion: "Lima",
   addressCountry: "PE",
 } as const;
-export const SHOP_NAME = "FERO";
-export const SHOP_DESCRIPTION = "Agenda tu cita con Fernando Rojas «Fero» — corte, grooming y tatuaje en Miraflores, Lima.";
+export const SHOP_NAME = "Fero";
+export const SHOP_DESCRIPTION = "Agenda tu cita con Fernando Rojas «Fero»: corte, barba, grooming y tatuaje en Barranco, Lima.";
 
 /** Redes sociales. `url` vacío = aún no la conocemos: se muestra igual pero no va a los datos estructurados. */
 export const SOCIALS = [
-  { id: "instagram", name: "Instagram", handle: "@fero.cuts", url: "" },
+  { id: "instagram", name: "Instagram", handle: "@ferotattoo", url: "https://www.instagram.com/ferotattoo/" },
   { id: "tiktok", name: "TikTok", handle: "@feroink", url: "" },
   { id: "facebook", name: "Facebook", handle: "Fero Barbershop & Tattoo", url: "" },
 ] as const satisfies readonly { id: string; name: string; handle: string; url: string }[];

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { SHOP_DESCRIPTION, siteUrl } from "@/infrastructure/config/shop";
 import { DEFAULT_TITLE, OPEN_GRAPH } from "@/presentation/seo/metadata";
+import { Analytics } from "@vercel/analytics/next"
 import "./globals.css";
 
 // Fuentes servidas desde el repo (subset latín, licencia OFL; origen: Fontsource).
@@ -52,6 +53,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`${lora.variable} ${playfair.variable} ${dmMono.variable}`}>
+      <Analytics />
       <body>{children}</body>
     </html>
   );

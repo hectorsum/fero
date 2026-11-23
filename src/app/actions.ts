@@ -128,6 +128,7 @@ export async function createBookingAction(input: CreateBookingActionInput): Prom
  */
 function afterBookingCreated(booking: Booking, { calendar, service }: ReturnType<typeof deps>) {
   const mail = resendEnv();
+  if (!mail) console.warn("[booking email] Falta RESEND_API_KEY o NOTIFY_EMAIL: no se envían correos.");
   if (mail) {
     after(async () => {
       try {

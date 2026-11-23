@@ -1,3 +1,5 @@
+import { siteUrl } from "@/infrastructure/config/shop";
+
 export const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
@@ -10,14 +12,12 @@ export const formatDate = (date: string) =>
     new Date(`${date}T00:00:00Z`),
   );
 
-/** Tabla clave/valor; los valores se escapan aquí. */
-export const htmlRows = (rows: [string, string][]) =>
-  `<table cellpadding="6" style="border-collapse:collapse">${rows
-    .map(
-      ([k, v]) =>
-        `<tr><td style="color:#666;vertical-align:top">${escapeHtml(k)}</td><td style="white-space:pre-wrap">${escapeHtml(v)}</td></tr>`,
-    )
-    .join("")}</table>`;
+/** Dominio público para las imágenes del correo. Desde localhost Gmail no podría cargarlas: usa producción. */
+const PRODUCTION_URL = "https://fero.ink";
+export function emailAssetsUrl(): string {
+  const url = siteUrl();
+  return /\/\/(localhost|127\.0\.0\.1)(:|$)/.test(url) ? PRODUCTION_URL : url;
+}
 
 export interface EmailContent {
   subject: string;

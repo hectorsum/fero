@@ -4,7 +4,7 @@ import { BARBER_EMAIL, BARBER_WHATSAPP, SHOP_ADDRESS } from "@/infrastructure/co
 import { ResendBookingNotifier } from "./ResendBookingNotifier";
 import { ResendCustomerNotifier } from "./ResendCustomerNotifier";
 import { isResendTestSender, RESEND_TEST_FROM } from "./resend";
-import { adminBookingEmail } from "./templates/admin-booking";
+import { adminBookingEmail, customerWhatsappUrl } from "./templates/admin-booking";
 import { customerConfirmationEmail, mapsUrl } from "./templates/customer-confirmation";
 import { formatDate } from "./templates/shared";
 
@@ -39,15 +39,15 @@ describe("plantillas", () => {
     expect(formatDate("2026-11-21")).toBe("sábado, 21 de noviembre");
   });
 
-  it("admin: incluye los datos de la cita", () => {
-    const { subject, text } = adminBookingEmail(booking({ notes: "Degradado" }));
+  it("admin: incluye los datos de la cita", async () => {
+    const { subject, text } = await adminBookingEmail(booking({ notes: "Degradado" }));
     expect(subject).toContain("Ana Pérez");
     expect(text).toContain("Teléfono: +51 999 888 777");
     expect(text).toContain("Notas: Degradado");
   });
 
-  it("cliente: fecha, hora, dirección, Maps y WhatsApp", () => {
-    const { subject, text, html } = customerConfirmationEmail(booking());
+  it("cliente: fecha, hora, dirección, Maps y WhatsApp", async () => {
+    const { subject, text, html } = await customerConfirmationEmail(booking());
     expect(subject).toBe("Tu cita en FERO — sábado, 21 de noviembre, 10:00");
     for (const out of [text, html]) {
       expect(out).toContain("sábado, 21 de noviembre");
@@ -57,21 +57,35 @@ describe("plantillas", () => {
       expect(out).toContain("Si necesitas cancelar o reprogramar, avísanos por WhatsApp con anticipación");
     }
     expect(text).toContain(mapsUrl(SHOP_ADDRESS));
+    expect(html).toContain('lang="es"');
+    expect(html).toContain("https://fero.ink/email/logo.png");
+    expect(html).toContain("https://fero.ink/email/banner.jpg");
     expect(mapsUrl("Av 1, Lima")).toBe("https://www.google.com/maps/search/?api=1&query=Av%201%2C%20Lima");
   });
 
-  it("escapa HTML malicioso en nombre y notas", () => {
+  it("escapa HTML malicioso en nombre y notas", async () => {
     const b = booking({ notes: evil, contact: { name: evil, phone: "1", email: "a@b.co" } });
-    for (const { html } of [adminBookingEmail(b), customerConfirmationEmail(b)]) {
+    for (const { html } of [await adminBookingEmail(b), await customerConfirmationEmail(b)]) {
       expect(html).not.toContain("<script>");
       expect(html).toContain("&lt;script&gt;");
     }
   });
 
-  it("asuntos sin saltos de línea", () => {
+  it("asuntos sin saltos de línea", async () => {
     const b = booking({ contact: { name: "Ana\r\nBcc: x@y.z", phone: "1", email: "a@b.co" } });
-    expect(adminBookingEmail(b).subject).not.toMatch(/[\r\n]/);
-    expect(customerConfirmationEmail(b).subject).not.toMatch(/[\r\n]/);
+    expect((await adminBookingEmail(b)).subject).not.toMatch(/[\r\n]/);
+    expect((await customerConfirmationEmail(b)).subject).not.toMatch(/[\r\n]/);
+  });
+});
+
+describe("WhatsApp del cliente (aviso al admin)", () => {
+  it.each([
+    ["924 230 225", "https://wa.me/51924230225"],
+    ["+51 924 230 225", "https://wa.me/51924230225"],
+    ["+52 55 1234 5678", "https://wa.me/525512345678"],
+    ["12345", null],
+  ])("%s → %s", (phone, url) => {
+    expect(customerWhatsappUrl(phone)).toBe(url);
   });
 });
 

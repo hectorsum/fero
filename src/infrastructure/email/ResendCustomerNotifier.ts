@@ -17,7 +17,7 @@ export class ResendCustomerNotifier implements CustomerNotifier {
       return;
     }
     await sendEmail(this.env, {
-      ...customerConfirmationEmail(b),
+      ...(await customerConfirmationEmail(b)),
       to: b.contact.email,
       replyTo: BARBER_EMAIL,
       idempotencyKey: `booking-customer-${b.id}`,

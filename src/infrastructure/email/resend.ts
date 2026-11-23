@@ -38,6 +38,8 @@ export async function sendEmail(
       subject: msg.subject,
       text: msg.text,
       html: msg.html,
+      // Gmail ignora a veces el lang del HTML y ofrece "traducir del inglés".
+      headers: { "Content-Language": "es" },
       ...(msg.attachments?.length
         ? { attachments: msg.attachments.map((a) => ({ filename: a.filename, content: Buffer.from(a.content, "utf8").toString("base64") })) }
         : {}),

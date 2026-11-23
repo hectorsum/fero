@@ -28,10 +28,12 @@ function rows(s: WizardState, isTattoo: boolean) {
 export default function StepConfirmar({
   s,
   isTattoo,
+  turnstileSiteKey,
   onCaptchaToken,
 }: {
   s: WizardState;
   isTattoo: boolean;
+  turnstileSiteKey: string;
   onCaptchaToken: (token: string | null) => void;
 }) {
   return (
@@ -56,7 +58,7 @@ export default function StepConfirmar({
       </p>
       {!isTattoo && (
         <div style={{ marginTop: 18 }}>
-          <TurnstileWidget key={s.captchaNonce} onToken={onCaptchaToken} />
+          <TurnstileWidget key={s.captchaNonce} siteKey={turnstileSiteKey} onToken={onCaptchaToken} />
         </div>
       )}
     </div>

@@ -26,7 +26,6 @@ declare global {
   }
 }
 
-const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 const SCRIPT_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 /** Sin site key en desarrollo: el servidor (sin secret) también deja pasar. */
 const DEV_TOKEN = "dev-sin-turnstile";
@@ -38,7 +37,7 @@ const message: React.CSSProperties = { margin: 0, fontSize: 13.5, lineHeight: 1.
  * `onToken(null)` cuando caduca o falla. Los tokens son de un solo uso: para pedir uno nuevo,
  * vuelve a montar el componente (cambiando su `key`).
  */
-export default function TurnstileWidget({ onToken }: { onToken: (token: string | null) => void }) {
+export default function TurnstileWidget({ siteKey, onToken }: { siteKey: string; onToken: (token: string | null) => void }) {
   const box = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
   const onTokenRef = useRef(onToken);
@@ -51,7 +50,7 @@ export default function TurnstileWidget({ onToken }: { onToken: (token: string |
   const render = () => {
     if (!box.current || !window.turnstile || widgetId.current) return;
     widgetId.current = window.turnstile.render(box.current, {
-      sitekey: SITE_KEY,
+      sitekey: siteKey,
       action: "booking",
       theme: "dark",
       language: "es",
@@ -63,7 +62,7 @@ export default function TurnstileWidget({ onToken }: { onToken: (token: string |
   };
 
   useEffect(() => {
-    if (!SITE_KEY) {
+    if (!siteKey) {
       if (process.env.NODE_ENV !== "production") onTokenRef.current(DEV_TOKEN);
       return;
     }
@@ -74,9 +73,11 @@ export default function TurnstileWidget({ onToken }: { onToken: (token: string |
       widgetId.current = null;
       onTokenRef.current(null);
     };
+    // La clave no cambia durante la vida del widget; render lee siteKey de este mismo render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!SITE_KEY) {
+  if (!siteKey) {
     return process.env.NODE_ENV === "production" ? (
       <p role="alert" style={message}>
         La verificación anti-spam no está disponible en este momento. Escríbenos por WhatsApp para agendar.

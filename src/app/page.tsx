@@ -29,10 +29,11 @@ async function getPublicAvailability(): Promise<Availability> {
 }
 
 /**
- * La site key de Turnstile es pública. Se lee en el servidor en cada petición (la página es dinámica)
- * en vez de incrustarse al compilar: así no depende de que la variable existiera durante el build.
+ * La site key de Turnstile es pública. Se lee en el servidor en cada petición (la página es dinámica).
+ * Sin prefijo NEXT_PUBLIC_ a propósito: Next incrusta esas variables al compilar (también en código de
+ * servidor), y un valor viejo puede quedar en la caché de .next aunque cambies el .env.
  */
-const turnstileSiteKey = () => process.env.TURNSTILE_SITE_KEY || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
+const turnstileSiteKey = () => process.env.TURNSTILE_SITE_KEY ?? "";
 
 export default async function Home() {
   const availability = await getPublicAvailability();
